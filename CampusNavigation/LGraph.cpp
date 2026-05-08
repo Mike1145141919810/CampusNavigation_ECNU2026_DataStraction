@@ -202,33 +202,54 @@ namespace Graph {
     // ==================== 遍历 / 高级查询 ====================
 
     std::vector<std::string> LGraph::AllPlaceIds() const {
-        // TODO: 返回当前图中所有存在的地点 id
-        //   顺序由你决定（是否排序、按什么排序，请在报告中说明）
-        return {};
+        std::vector<std::string> ids;
+        ids.reserve(vertices_.size());
+        for (const auto &kv : vertices_) {
+            ids.push_back(kv.first);
+        }
+        return ids;
     }
 
     std::vector<EdgeNode> LGraph::AllEdges(bool only_open) const {
-        // TODO: 返回当前图中所有边
-        //   - 无向图中每条边只出现一次
-        //   - only_open = true 时仅返回 status == "open" 的边
-        //   - 返回顺序由你决定
-        (void)only_open;
-        return {};
+        std::vector<EdgeNode> edges;
+        for (const auto &from_kv : adj_) {
+            for (const auto &to_kv : from_kv.second) {
+                // 无向图每条边只输出一次（from_id < to_id 字典序）
+                if (!directed_ && from_kv.first >= to_kv.first) {
+                    continue;
+                }
+                if (only_open && to_kv.second.status != "open") {
+                    continue;
+                }
+                edges.push_back(to_kv.second);
+            }
+        }
+        return edges;
     }
 
     std::vector<EdgeNode> LGraph::GetAdjacentEdges(const std::string &place_id) const {
-        // TODO: 返回某地点的所有邻接边完整信息
-        //   place_id 不存在 → GraphException
-        //   返回顺序由你决定
-        (void)place_id;
-        return {};
+        if (!exist_vertex(place_id)) {
+            throw GraphException("vertex not found: " + place_id);
+        }
+        std::vector<EdgeNode> edges;
+        auto it = adj_.find(place_id);
+        if (it != adj_.end()) {
+            edges.reserve(it->second.size());
+            for (const auto &kv : it->second) {
+                edges.push_back(kv.second);
+            }
+        }
+        return edges;
     }
 
     std::vector<std::string> LGraph::GetPlacesByCategory(const std::string &category) const {
-        // TODO: 返回某类别下所有地点 id
-        //   返回顺序由你决定
-        (void)category;
-        return {};
+        std::vector<std::string> ids;
+        for (const auto &kv : vertices_) {
+            if (kv.second.category == category) {
+                ids.push_back(kv.first);
+            }
+        }
+        return ids;
     }
 
 }
