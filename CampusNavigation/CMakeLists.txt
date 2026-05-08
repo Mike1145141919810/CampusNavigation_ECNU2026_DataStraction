@@ -1,0 +1,14 @@
+cmake_minimum_required(VERSION 3.16)
+project(CampusNavigation)
+
+set(CMAKE_CXX_STANDARD 17)
+
+add_executable(
+        CampusNavigation
+        main.cpp
+        LGraph.cpp
+        LocationInfo.cpp
+        Algorithm.cpp
+        CsvIO.cpp
+        CommandProcessor.cpp
+)
