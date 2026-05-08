@@ -33,37 +33,74 @@ namespace Graph {
     // ==================== 顶点操作 ====================
 
     void LGraph::InsertVertex(const LocationInfo &vertex_info) {
-        // TODO: 插入顶点
-        //   - 若 place_id 已存在，抛出 GraphException
-        //   - 否则将其加入你的存储结构
-        (void)vertex_info;
-        throw GraphException("LGraph::InsertVertex 还没实现");
+        if (exist_vertex(vertex_info.place_id)) {
+            throw GraphException("vertex already exists: " + vertex_info.place_id);
+        }
+        vertices_[vertex_info.place_id] = vertex_info;
     }
 
     void LGraph::DeleteVertex(const std::string &place_id) {
-        // TODO: 删除顶点，并同步删除所有与该顶点相关的边
-        //   - 若 place_id 不存在，抛出 GraphException
-        //   - 无向图中对端的邻接信息也要同步清理
-        (void)place_id;
-        throw GraphException("LGraph::DeleteVertex 还没实现");
+        auto it_v = vertices_.find(place_id);
+        if (it_v == vertices_.end()) {
+            throw GraphException("vertex not found: " + place_id);
+        }
+
+        // 先清理邻接边（无向图中需同步删除对端记录）
+        auto it_adj = adj_.find(place_id);
+        if (it_adj != adj_.end()) {
+            if (!directed_) {
+                for (const auto &kv : it_adj->second) {
+                    auto &neighbor_adj = adj_[kv.first];
+                    neighbor_adj.erase(place_id);
+                    if (neighbor_adj.empty()) {
+                        adj_.erase(kv.first);
+                    }
+                }
+            }
+            edge_count_ -= static_cast<int>(it_adj->second.size());
+            adj_.erase(it_adj);
+        }
+
+        // 清理其他顶点指向该顶点的边（有向图场景）
+        if (directed_) {
+            for (auto &kv : adj_) {
+                if (kv.second.erase(place_id) > 0) {
+                    edge_count_--;
+                }
+            }
+        }
+
+        vertices_.erase(it_v);
     }
 
     void LGraph::UpdateVertex(const std::string &place_id,
                               const std::string &field, const std::string &value) {
-        // TODO: 按字段名更新顶点信息
-        //   支持的字段：display_name, category, stay_time, open_time, close_time
-        //   - stay_time 需要将 value 转为 int
-        //   - place_id 不存在 → GraphException
-        //   - field 不支持 → GraphException
-        (void)place_id; (void)field; (void)value;
-        throw GraphException("LGraph::UpdateVertex 还没实现");
+        auto it = vertices_.find(place_id);
+        if (it == vertices_.end()) {
+            throw GraphException("vertex not found: " + place_id);
+        }
+
+        if (field == "display_name") {
+            it->second.display_name = value;
+        } else if (field == "category") {
+            it->second.category = value;
+        } else if (field == "stay_time") {
+            it->second.stay_time = std::stoi(value);
+        } else if (field == "open_time") {
+            it->second.open_time = value;
+        } else if (field == "close_time") {
+            it->second.close_time = value;
+        } else {
+            throw GraphException("unknown field: " + field);
+        }
     }
 
     LocationInfo LGraph::GetVertex(const std::string &place_id) const {
-        // TODO: 返回 place_id 对应的顶点完整信息
-        //   不存在 → GraphException
-        (void)place_id;
-        throw GraphException("LGraph::GetVertex 还没实现");
+        auto it = vertices_.find(place_id);
+        if (it == vertices_.end()) {
+            throw GraphException("vertex not found: " + place_id);
+        }
+        return it->second;
     }
 
     // ==================== 边操作 ====================
