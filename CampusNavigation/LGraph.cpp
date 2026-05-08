@@ -13,25 +13,21 @@ namespace Graph {
     // ==================== 基础信息 ====================
 
     int LGraph::VertexCount() const {
-        // TODO: 返回当前图中存在的顶点数
-        return 0;
+        return static_cast<int>(vertices_.size());
     }
 
     int LGraph::EdgesCount() const {
-        // TODO: 返回当前图中存在的边数（无向图中每条边算一次）
-        return 0;
+        return edge_count_;
     }
 
     bool LGraph::exist_vertex(const std::string &place_id) const {
-        // TODO: 判断 place_id 对应的顶点是否存在
-        (void)place_id;
-        return false;
+        return vertices_.find(place_id) != vertices_.end();
     }
 
     bool LGraph::exist_edge(const std::string &from_id, const std::string &to_id) const {
-        // TODO: 判断 from_id 与 to_id 之间是否有边
-        (void)from_id; (void)to_id;
-        return false;
+        auto it_from = adj_.find(from_id);
+        if (it_from == adj_.end()) return false;
+        return it_from->second.find(to_id) != it_from->second.end();
     }
 
     // ==================== 顶点操作 ====================

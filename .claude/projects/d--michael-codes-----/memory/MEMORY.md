@@ -1,0 +1,1 @@
+- [每步写commit描述并确认](workflow_commit_per_step.md) — 完成子任务后给出commit描述，每步须经用户确认才能继续

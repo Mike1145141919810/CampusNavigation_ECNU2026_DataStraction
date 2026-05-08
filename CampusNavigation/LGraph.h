@@ -41,8 +41,8 @@ namespace Graph {
         // vertices_: place_id → LocationInfo
         // adj_:      from_id → {to_id → EdgeNode}  （无向图双向存储）
         std::unordered_map<std::string, LocationInfo> vertices_;
-        std::unordered_map<std::string,
-            std::unordered_map<std::string, EdgeNode>> adj_;
+        std::unordered_map < std::string,
+        std::unordered_map < std::string, EdgeNode >> adj_;
         bool directed_;
         int edge_count_{0};  // 无向图中每条边算一次
 
