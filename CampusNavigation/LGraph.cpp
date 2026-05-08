@@ -192,15 +192,11 @@ namespace Graph {
     // ==================== 道路状态 ====================
 
     void LGraph::CloseRoad(const std::string &from_id, const std::string &to_id) {
-        // TODO: 将边 status 设为 "closed"（可复用 UpdateEdge）
-        (void)from_id; (void)to_id;
-        throw GraphException("LGraph::CloseRoad 还没实现");
+        UpdateEdge(from_id, to_id, "status", "closed");
     }
 
     void LGraph::OpenRoad(const std::string &from_id, const std::string &to_id) {
-        // TODO: 将边 status 设为 "open"（可复用 UpdateEdge）
-        (void)from_id; (void)to_id;
-        throw GraphException("LGraph::OpenRoad 还没实现");
+        UpdateEdge(from_id, to_id, "status", "open");
     }
 
     // ==================== 遍历 / 高级查询 ====================
