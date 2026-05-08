@@ -107,38 +107,86 @@ namespace Graph {
 
     void LGraph::InsertEdge(const std::string &from_id, const std::string &to_id,
                             int distance, int walk_time, const std::string &status) {
-        // TODO: 插入边
-        //   - 两端顶点必须都存在，否则抛异常
-        //   - 边已存在则抛 GraphException
-        //   - 无向图中注意反向关联
-        (void)from_id; (void)to_id; (void)distance; (void)walk_time; (void)status;
-        throw GraphException("LGraph::InsertEdge 还没实现");
+        if (!exist_vertex(from_id)) {
+            throw GraphException("vertex not found: " + from_id);
+        }
+        if (!exist_vertex(to_id)) {
+            throw GraphException("vertex not found: " + to_id);
+        }
+        if (exist_edge(from_id, to_id)) {
+            throw GraphException("edge already exists: " + from_id + " - " + to_id);
+        }
+
+        EdgeNode edge(from_id, to_id, distance, walk_time, status);
+        adj_[from_id][to_id] = edge;
+        edge_count_++;
+
+        if (!directed_) {
+            EdgeNode rev_edge(to_id, from_id, distance, walk_time, status);
+            adj_[to_id][from_id] = rev_edge;
+        }
     }
 
     void LGraph::DeleteEdge(const std::string &from_id, const std::string &to_id) {
-        // TODO: 删除边
-        //   - 边不存在 → GraphException
-        //   - 无向图中反向边同步删除
-        (void)from_id; (void)to_id;
-        throw GraphException("LGraph::DeleteEdge 还没实现");
+        if (!exist_edge(from_id, to_id)) {
+            throw GraphException("edge not found: " + from_id + " - " + to_id);
+        }
+
+        adj_[from_id].erase(to_id);
+        if (adj_[from_id].empty()) {
+            adj_.erase(from_id);
+        }
+        edge_count_--;
+
+        if (!directed_) {
+            adj_[to_id].erase(from_id);
+            if (adj_[to_id].empty()) {
+                adj_.erase(to_id);
+            }
+        }
     }
 
     void LGraph::UpdateEdge(const std::string &from_id, const std::string &to_id,
                             const std::string &field, const std::string &value) {
-        // TODO: 按字段名更新边
-        //   支持字段：distance, walk_time, status
-        //   - distance / walk_time 需要转为 int
-        //   - status 只能是 "open" 或 "closed"
-        //   - 无向图中两个方向需同时更新
-        (void)from_id; (void)to_id; (void)field; (void)value;
-        throw GraphException("LGraph::UpdateEdge 还没实现");
+        if (!exist_edge(from_id, to_id)) {
+            throw GraphException("edge not found: " + from_id + " - " + to_id);
+        }
+
+        auto update_field = [&](EdgeNode &e) {
+            if (field == "distance") {
+                e.distance = std::stoi(value);
+            } else if (field == "walk_time") {
+                e.walk_time = std::stoi(value);
+            } else if (field == "status") {
+                if (value != "open" && value != "closed") {
+                    throw GraphException("invalid status: " + value);
+                }
+                e.status = value;
+            } else {
+                throw GraphException("unknown field: " + field);
+            }
+        };
+
+        update_field(adj_[from_id][to_id]);
+
+        if (!directed_) {
+            EdgeNode &rev = adj_[to_id][from_id];
+            // 用原始字段同步（保持 from_id / to_id 对称性）
+            rev.distance = adj_[from_id][to_id].distance;
+            rev.walk_time = adj_[from_id][to_id].walk_time;
+            rev.status = adj_[from_id][to_id].status;
+        }
     }
 
     EdgeNode LGraph::GetEdge(const std::string &from_id, const std::string &to_id) const {
-        // TODO: 返回边的完整信息
-        //   不存在 → GraphException
-        (void)from_id; (void)to_id;
-        throw GraphException("LGraph::GetEdge 还没实现");
+        auto it_from = adj_.find(from_id);
+        if (it_from != adj_.end()) {
+            auto it_to = it_from->second.find(to_id);
+            if (it_to != it_from->second.end()) {
+                return it_to->second;
+            }
+        }
+        throw GraphException("edge not found: " + from_id + " - " + to_id);
     }
 
     // ==================== 道路状态 ====================
