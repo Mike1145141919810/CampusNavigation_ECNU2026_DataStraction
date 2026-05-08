@@ -12,3 +12,10 @@ add_executable(
         CsvIO.cpp
         CommandProcessor.cpp
 )
+
+add_executable(
+        test_lgraph
+        test_lgraph.cpp
+        LGraph.cpp
+        LocationInfo.cpp
+)
