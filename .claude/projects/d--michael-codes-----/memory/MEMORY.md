@@ -1,2 +1,0 @@
-- [每步写commit描述并确认](workflow_commit_per_step.md) — 完成子任务后给出commit描述，每步须经用户确认才能继续
-- [会话结束自动导出对话记录](session_export_on_end.md) — 说"结束"时自动导出本次对话为md文件
