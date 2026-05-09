@@ -7,62 +7,142 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <algorithm>
 
 namespace Graph {
     namespace CsvIO {
 
         std::vector<LocationInfo> ReadPlaces(const std::string &path) {
-            (void)path;
-            // TODO: 从 CSV 读取地点信息
-            // 提示：
-            //   1. 打开文件，若失败则输出错误信息并返回空 vector
-            //   2. 逐行读取，将逗号替换为空格后使用 istringstream 解析
-            //   3. 若首行以 "place_id" 开头，则跳过（表头行）
-            //   4. 跳过空行
-            //   5. 每行解析为：place_id, display_name, category, stay_time, open_time, close_time
-            //   6. 将解析结果加入 vector 并返回
-            std::cerr << "CsvIO::ReadPlaces 还没实现" << std::endl;
-            return {};
+            std::ifstream file(path);
+            if (!file.is_open()) {
+                std::cerr << "Error: cannot open file: " << path << std::endl;
+                return {};
+            }
+
+            std::vector<LocationInfo> places;
+            std::string line;
+            bool first_line = true;
+
+            while (std::getline(file, line)) {
+                if (line.empty()) continue;
+
+                if (first_line && line.compare(0, 8, "place_id") == 0) {
+                    first_line = false;
+                    continue;
+                }
+                first_line = false;
+
+                // 将逗号替换为空格后使用 istringstream 解析
+                for (char &c : line) {
+                    if (c == ',') c = ' ';
+                }
+
+                std::istringstream iss(line);
+                std::string place_id, display_name, category, open_time, close_time;
+                int stay_time;
+
+                if (!(iss >> place_id >> display_name >> category
+                          >> stay_time >> open_time >> close_time)) {
+                    std::cerr << "Warning: malformed line in " << path << std::endl;
+                    continue;
+                }
+
+                places.emplace_back(place_id, display_name, category,
+                                    stay_time, open_time, close_time);
+            }
+
+            return places;
         }
 
         std::vector<RoadRecord> ReadRoads(const std::string &path) {
-            (void)path;
-            // TODO: 从 CSV 读取道路信息
-            // 提示：
-            //   1. 打开文件，若失败则输出错误信息并返回空 vector
-            //   2. 逐行读取，将逗号替换为空格后使用 istringstream 解析
-            //   3. 若首行以 "from_id" 开头，则跳过（表头行）
-            //   4. 跳过空行
-            //   5. 每行解析为：from_id, to_id, distance, walk_time, status
-            //   6. 将解析结果加入 vector 并返回
-            std::cerr << "CsvIO::ReadRoads 还没实现" << std::endl;
-            return {};
+            std::ifstream file(path);
+            if (!file.is_open()) {
+                std::cerr << "Error: cannot open file: " << path << std::endl;
+                return {};
+            }
+
+            std::vector<RoadRecord> roads;
+            std::string line;
+            bool first_line = true;
+
+            while (std::getline(file, line)) {
+                if (line.empty()) continue;
+
+                if (first_line && line.compare(0, 7, "from_id") == 0) {
+                    first_line = false;
+                    continue;
+                }
+                first_line = false;
+
+                // 将逗号替换为空格后使用 istringstream 解析
+                for (char &c : line) {
+                    if (c == ',') c = ' ';
+                }
+
+                std::istringstream iss(line);
+                RoadRecord r;
+
+                if (!(iss >> r.from_id >> r.to_id >> r.distance
+                          >> r.walk_time >> r.status)) {
+                    std::cerr << "Warning: malformed line in " << path << std::endl;
+                    continue;
+                }
+
+                roads.push_back(r);
+            }
+
+            return roads;
         }
 
         void WritePlaces(const std::string &path, const LGraph &graph) {
-            (void)path;
-            (void)graph;
-            // TODO: 将地点信息写回 CSV
-            // 提示：
-            //   1. 打开文件输出流
-            //   2. 写入表头行：place_id,display_name,category,stay_time,open_time,close_time
-            //   3. 通过 graph.AllPlaceIds() 获取所有地点 id，逐个调用 graph.GetVertex(id) 取完整信息
-            //   4. 每行输出一个地点的完整信息，字段间用逗号分隔
-            //   5. 关闭文件
-            std::cerr << "CsvIO::WritePlaces 还没实现" << std::endl;
+            std::ofstream file(path);
+            if (!file.is_open()) {
+                std::cerr << "Error: cannot open file for writing: " << path << std::endl;
+                return;
+            }
+
+            file << "place_id,display_name,category,stay_time,open_time,close_time\n";
+
+            auto ids = graph.AllPlaceIds();
+            // 按 place_id 字典序输出，保持与测试数据格式一致
+            std::sort(ids.begin(), ids.end());
+
+            for (const auto &id : ids) {
+                auto info = graph.GetVertex(id);
+                file << info.place_id << ','
+                     << info.display_name << ','
+                     << info.category << ','
+                     << info.stay_time << ','
+                     << info.open_time << ','
+                     << info.close_time << '\n';
+            }
         }
 
         void WriteRoads(const std::string &path, const LGraph &graph) {
-            (void)path;
-            (void)graph;
-            // TODO: 将道路信息写回 CSV
-            // 提示：
-            //   1. 打开文件输出流
-            //   2. 写入表头行：from_id,to_id,distance,walk_time,status
-            //   3. 使用 graph.AllEdges(false) 获取所有边（包括 closed）
-            //   4. 输出每条边的 from_id, to_id, distance, walk_time, status
-            //   5. 关闭文件
-            std::cerr << "CsvIO::WriteRoads 还没实现" << std::endl;
+            std::ofstream file(path);
+            if (!file.is_open()) {
+                std::cerr << "Error: cannot open file for writing: " << path << std::endl;
+                return;
+            }
+
+            file << "from_id,to_id,distance,walk_time,status\n";
+
+            auto edges = graph.AllEdges(false);
+
+            // 按 (from_id, to_id) 字典序排序，保持输出稳定
+            std::sort(edges.begin(), edges.end(),
+                      [](const EdgeNode &a, const EdgeNode &b) {
+                          if (a.from_id != b.from_id) return a.from_id < b.from_id;
+                          return a.to_id < b.to_id;
+                      });
+
+            for (const auto &e : edges) {
+                file << e.from_id << ','
+                     << e.to_id << ','
+                     << e.distance << ','
+                     << e.walk_time << ','
+                     << e.status << '\n';
+            }
         }
     }
 }
