@@ -74,6 +74,9 @@ namespace Graph {
         void CloseRoad(const std::string &from_id, const std::string &to_id);
         void OpenRoad(const std::string &from_id, const std::string &to_id);
 
+        // ==================== 清空 ====================
+        void Clear();
+
         // ==================== 遍历 / 高级查询 ====================
         // 下面这些方法服务于 Algorithm / CsvIO 等模块，避免它们直接访问你的私有存储。
         std::vector<std::string> AllPlaceIds() const;

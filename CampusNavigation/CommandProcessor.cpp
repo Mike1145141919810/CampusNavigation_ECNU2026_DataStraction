@@ -5,11 +5,13 @@
 
 #include "CommandProcessor.h"
 #include <iostream>
+#include <algorithm>
+#include <fstream>
 
 namespace Graph {
 
     bool CommandProcessor::ProcessCommand(const std::string &line) {
-        (void)graph;  // TODO: 各 cmd* 处理函数实现后会使用 graph。
+        (void)graph;
 
         std::istringstream iss(line);
         std::string cmd;
@@ -66,210 +68,400 @@ namespace Graph {
 
     // ==================== LOAD ====================
     void CommandProcessor::cmdLoad(std::istringstream &args) {
-        (void)args;
-        // TODO: 实现 LOAD <places.csv> <roads.csv>
-        // 提示：
-        //   1. 从 args 读取两个文件路径
-        //   2. 用 CsvIO::ReadPlaces 和 CsvIO::ReadRoads 读取数据
-        //   3. 重建图（清空旧数据，插入新顶点和边）
-        //   4. 成功输出 "OK"，失败输出 "ERROR <reason>"
-        std::cerr << "cmdLoad 还没实现" << std::endl;
-        std::cout << "ERROR not_implemented" << std::endl;
+        std::string places_path, roads_path;
+        if (!(args >> places_path >> roads_path)) {
+            std::cout << "ERROR invalid_arguments" << std::endl;
+            return;
+        }
+
+        // 检查文件是否存在
+        {
+            std::ifstream test1(places_path);
+            if (!test1.is_open()) {
+                std::cout << "ERROR file_not_found" << std::endl;
+                return;
+            }
+            std::ifstream test2(roads_path);
+            if (!test2.is_open()) {
+                std::cout << "ERROR file_not_found" << std::endl;
+                return;
+            }
+        }
+
+        // 清空旧图
+        graph.Clear();
+
+        // 加载地点
+        auto places = CsvIO::ReadPlaces(places_path);
+        try {
+            for (const auto &p : places) {
+                graph.InsertVertex(p);
+            }
+        } catch (const GraphException &e) {
+            std::cout << "ERROR " << e.what() << std::endl;
+            return;
+        }
+
+        // 加载道路
+        auto roads = CsvIO::ReadRoads(roads_path);
+        try {
+            for (const auto &r : roads) {
+                graph.InsertEdge(r.from_id, r.to_id, r.distance, r.walk_time, r.status);
+            }
+        } catch (const GraphException &e) {
+            std::cout << "ERROR " << e.what() << std::endl;
+            return;
+        }
+
+        std::cout << "OK" << std::endl;
     }
 
     // ==================== SAVE ====================
     void CommandProcessor::cmdSave(std::istringstream &args) {
-        (void)args;
-        // TODO: 实现 SAVE <places_out.csv> <roads_out.csv>
-        // 提示：
-        //   1. 从 args 读取两个输出文件路径
-        //   2. 调用 CsvIO::WritePlaces 和 CsvIO::WriteRoads
-        //   3. 成功输出 "OK"
-        std::cerr << "cmdSave 还没实现" << std::endl;
-        std::cout << "ERROR not_implemented" << std::endl;
+        std::string places_path, roads_path;
+        if (!(args >> places_path >> roads_path)) {
+            std::cout << "ERROR invalid_arguments" << std::endl;
+            return;
+        }
+
+        CsvIO::WritePlaces(places_path, graph);
+        CsvIO::WriteRoads(roads_path, graph);
+
+        std::cout << "OK" << std::endl;
     }
 
     // ==================== QUERY_PLACE ====================
     void CommandProcessor::cmdQueryPlace(std::istringstream &args) {
-        (void)args;
-        // TODO: 实现 QUERY_PLACE <place_id>
-        // 输出格式：PLACE <place_id> <display_name> <category> <stay_time> <open_time> <close_time>
-        // 若不存在：ERROR place_not_found
-        std::cerr << "cmdQueryPlace 还没实现" << std::endl;
-        std::cout << "ERROR not_implemented" << std::endl;
+        std::string place_id;
+        if (!(args >> place_id)) {
+            std::cout << "ERROR invalid_arguments" << std::endl;
+            return;
+        }
+
+        if (!graph.exist_vertex(place_id)) {
+            std::cout << "ERROR place_not_found" << std::endl;
+            return;
+        }
+
+        auto info = graph.GetVertex(place_id);
+        std::cout << "PLACE " << info.place_id << ' '
+                  << info.display_name << ' '
+                  << info.category << ' '
+                  << info.stay_time << ' '
+                  << info.open_time << ' '
+                  << info.close_time << std::endl;
     }
 
     // ==================== QUERY_CATEGORY ====================
     void CommandProcessor::cmdQueryCategory(std::istringstream &args) {
-        (void)args;
-        // TODO: 实现 QUERY_CATEGORY <category>
-        // 输出格式：CATEGORY <category> <count> <id1> <id2> ...
-        // place_id 按字典序升序输出
-        // 若无匹配：CATEGORY <category> 0
-        std::cerr << "cmdQueryCategory 还没实现" << std::endl;
-        std::cout << "ERROR not_implemented" << std::endl;
+        std::string category;
+        if (!(args >> category)) {
+            std::cout << "ERROR invalid_arguments" << std::endl;
+            return;
+        }
+
+        auto ids = graph.GetPlacesByCategory(category);
+        std::sort(ids.begin(), ids.end());
+
+        std::cout << "CATEGORY " << category << ' ' << ids.size();
+        for (const auto &id : ids) {
+            std::cout << ' ' << id;
+        }
+        std::cout << std::endl;
     }
 
     // ==================== ADJ ====================
     void CommandProcessor::cmdAdj(std::istringstream &args) {
-        (void)args;
-        // TODO: 实现 ADJ <place_id>
-        // 输出格式：ADJ <place_id> <count> <neighbor1>:<distance>:<walk_time>:<status> ...
-        // 邻接点按 place_id 字典序升序输出
-        // 若顶点不存在：ERROR place_not_found
-        std::cerr << "cmdAdj 还没实现" << std::endl;
-        std::cout << "ERROR not_implemented" << std::endl;
+        std::string place_id;
+        if (!(args >> place_id)) {
+            std::cout << "ERROR invalid_arguments" << std::endl;
+            return;
+        }
+
+        if (!graph.exist_vertex(place_id)) {
+            std::cout << "ERROR place_not_found" << std::endl;
+            return;
+        }
+
+        auto edges = graph.GetAdjacentEdges(place_id);
+        // 按 neighbor (to_id) 字典序排序
+        std::sort(edges.begin(), edges.end(),
+                  [](const EdgeNode &a, const EdgeNode &b) {
+                      return a.to_id < b.to_id;
+                  });
+
+        std::cout << "ADJ " << place_id << ' ' << edges.size();
+        for (const auto &e : edges) {
+            std::cout << ' ' << e.to_id << ':' << e.distance
+                      << ':' << e.walk_time << ':' << e.status;
+        }
+        std::cout << std::endl;
     }
 
     // ==================== ADD_PLACE ====================
     void CommandProcessor::cmdAddPlace(std::istringstream &args) {
-        (void)args;
-        // TODO: 实现 ADD_PLACE <place_id> <display_name> <category> <stay_time> <open_time> <close_time>
-        // 成功输出 "OK"
-        // 若 place_id 已存在：ERROR place_already_exists
-        std::cerr << "cmdAddPlace 还没实现" << std::endl;
-        std::cout << "ERROR not_implemented" << std::endl;
+        std::string place_id, display_name, category, open_time, close_time;
+        int stay_time;
+
+        if (!(args >> place_id >> display_name >> category
+                  >> stay_time >> open_time >> close_time)) {
+            std::cout << "ERROR invalid_arguments" << std::endl;
+            return;
+        }
+
+        if (graph.exist_vertex(place_id)) {
+            std::cout << "ERROR place_already_exists" << std::endl;
+            return;
+        }
+
+        LocationInfo info(place_id, display_name, category,
+                          stay_time, open_time, close_time);
+        try {
+            graph.InsertVertex(info);
+        } catch (const GraphException &e) {
+            std::cout << "ERROR " << e.what() << std::endl;
+            return;
+        }
+
+        std::cout << "OK" << std::endl;
     }
 
     // ==================== DELETE_PLACE ====================
     void CommandProcessor::cmdDeletePlace(std::istringstream &args) {
-        (void)args;
-        // TODO: 实现 DELETE_PLACE <place_id>
-        // 成功输出 "OK"
-        // 若不存在：ERROR place_not_found
-        std::cerr << "cmdDeletePlace 还没实现" << std::endl;
-        std::cout << "ERROR not_implemented" << std::endl;
+        std::string place_id;
+        if (!(args >> place_id)) {
+            std::cout << "ERROR invalid_arguments" << std::endl;
+            return;
+        }
+
+        if (!graph.exist_vertex(place_id)) {
+            std::cout << "ERROR place_not_found" << std::endl;
+            return;
+        }
+
+        try {
+            graph.DeleteVertex(place_id);
+        } catch (const GraphException &e) {
+            std::cout << "ERROR " << e.what() << std::endl;
+            return;
+        }
+
+        std::cout << "OK" << std::endl;
     }
 
     // ==================== UPDATE_PLACE ====================
     void CommandProcessor::cmdUpdatePlace(std::istringstream &args) {
-        (void)args;
-        // TODO: 实现 UPDATE_PLACE <place_id> <field> <value>
-        // 成功输出 "OK"
-        // 支持的字段：display_name, category, stay_time, open_time, close_time
-        // 若顶点不存在：ERROR place_not_found
-        // 若字段不支持：ERROR invalid_field
-        std::cerr << "cmdUpdatePlace 还没实现" << std::endl;
-        std::cout << "ERROR not_implemented" << std::endl;
+        std::string place_id, field, value;
+        if (!(args >> place_id >> field >> value)) {
+            std::cout << "ERROR invalid_arguments" << std::endl;
+            return;
+        }
+
+        if (!graph.exist_vertex(place_id)) {
+            std::cout << "ERROR place_not_found" << std::endl;
+            return;
+        }
+
+        // 校验字段合法性（stay_time 必须为整数）
+        if (field == "stay_time") {
+            try {
+                (void)std::stoi(value);
+            } catch (...) {
+                std::cout << "ERROR invalid_field" << std::endl;
+                return;
+            }
+        } else if (field != "display_name" && field != "category" &&
+                   field != "open_time" && field != "close_time") {
+            std::cout << "ERROR invalid_field" << std::endl;
+            return;
+        }
+
+        try {
+            graph.UpdateVertex(place_id, field, value);
+        } catch (const GraphException &e) {
+            std::cout << "ERROR " << e.what() << std::endl;
+            return;
+        }
+
+        std::cout << "OK" << std::endl;
     }
 
     // ==================== ADD_ROAD ====================
     void CommandProcessor::cmdAddRoad(std::istringstream &args) {
-        (void)args;
-        // TODO: 实现 ADD_ROAD <from_id> <to_id> <distance> <walk_time> <status>
-        // 成功输出 "OK"
-        // 若顶点不存在：ERROR place_not_found
-        // 若边已存在：ERROR road_already_exists
-        std::cerr << "cmdAddRoad 还没实现" << std::endl;
-        std::cout << "ERROR not_implemented" << std::endl;
+        std::string from_id, to_id, status;
+        int distance, walk_time;
+
+        if (!(args >> from_id >> to_id >> distance >> walk_time >> status)) {
+            std::cout << "ERROR invalid_arguments" << std::endl;
+            return;
+        }
+
+        if (!graph.exist_vertex(from_id) || !graph.exist_vertex(to_id)) {
+            std::cout << "ERROR place_not_found" << std::endl;
+            return;
+        }
+
+        if (graph.exist_edge(from_id, to_id)) {
+            std::cout << "ERROR road_already_exists" << std::endl;
+            return;
+        }
+
+        try {
+            graph.InsertEdge(from_id, to_id, distance, walk_time, status);
+        } catch (const GraphException &e) {
+            std::cout << "ERROR " << e.what() << std::endl;
+            return;
+        }
+
+        std::cout << "OK" << std::endl;
     }
 
     // ==================== DELETE_ROAD ====================
     void CommandProcessor::cmdDeleteRoad(std::istringstream &args) {
-        (void)args;
-        // TODO: 实现 DELETE_ROAD <from_id> <to_id>
-        // 成功输出 "OK"
-        // 若边不存在：ERROR road_not_found
-        std::cerr << "cmdDeleteRoad 还没实现" << std::endl;
-        std::cout << "ERROR not_implemented" << std::endl;
+        std::string from_id, to_id;
+        if (!(args >> from_id >> to_id)) {
+            std::cout << "ERROR invalid_arguments" << std::endl;
+            return;
+        }
+
+        if (!graph.exist_edge(from_id, to_id)) {
+            std::cout << "ERROR road_not_found" << std::endl;
+            return;
+        }
+
+        try {
+            graph.DeleteEdge(from_id, to_id);
+        } catch (const GraphException &e) {
+            std::cout << "ERROR " << e.what() << std::endl;
+            return;
+        }
+
+        std::cout << "OK" << std::endl;
     }
 
     // ==================== UPDATE_ROAD ====================
     void CommandProcessor::cmdUpdateRoad(std::istringstream &args) {
-        (void)args;
-        // TODO: 实现 UPDATE_ROAD <from_id> <to_id> <field> <value>
-        // 成功输出 "OK"
-        // 支持的字段：distance, walk_time, status
-        // 若边不存在：ERROR road_not_found
-        // 若字段不支持：ERROR invalid_field
-        std::cerr << "cmdUpdateRoad 还没实现" << std::endl;
-        std::cout << "ERROR not_implemented" << std::endl;
+        std::string from_id, to_id, field, value;
+        if (!(args >> from_id >> to_id >> field >> value)) {
+            std::cout << "ERROR invalid_arguments" << std::endl;
+            return;
+        }
+
+        if (!graph.exist_edge(from_id, to_id)) {
+            std::cout << "ERROR road_not_found" << std::endl;
+            return;
+        }
+
+        // 校验字段合法性
+        if (field == "distance" || field == "walk_time") {
+            try {
+                (void)std::stoi(value);
+            } catch (...) {
+                std::cout << "ERROR invalid_field" << std::endl;
+                return;
+            }
+        } else if (field == "status") {
+            if (value != "open" && value != "closed") {
+                std::cout << "ERROR invalid_field" << std::endl;
+                return;
+            }
+        } else {
+            std::cout << "ERROR invalid_field" << std::endl;
+            return;
+        }
+
+        try {
+            graph.UpdateEdge(from_id, to_id, field, value);
+        } catch (const GraphException &e) {
+            std::cout << "ERROR " << e.what() << std::endl;
+            return;
+        }
+
+        std::cout << "OK" << std::endl;
     }
 
     // ==================== CLOSE_ROAD ====================
     void CommandProcessor::cmdCloseRoad(std::istringstream &args) {
-        (void)args;
-        // TODO: 实现 CLOSE_ROAD <from_id> <to_id>
-        // 成功输出 "OK"
-        // 若边不存在：ERROR road_not_found
-        std::cerr << "cmdCloseRoad 还没实现" << std::endl;
-        std::cout << "ERROR not_implemented" << std::endl;
+        std::string from_id, to_id;
+        if (!(args >> from_id >> to_id)) {
+            std::cout << "ERROR invalid_arguments" << std::endl;
+            return;
+        }
+
+        if (!graph.exist_edge(from_id, to_id)) {
+            std::cout << "ERROR road_not_found" << std::endl;
+            return;
+        }
+
+        try {
+            graph.CloseRoad(from_id, to_id);
+        } catch (const GraphException &e) {
+            std::cout << "ERROR " << e.what() << std::endl;
+            return;
+        }
+
+        std::cout << "OK" << std::endl;
     }
 
     // ==================== OPEN_ROAD ====================
     void CommandProcessor::cmdOpenRoad(std::istringstream &args) {
-        (void)args;
-        // TODO: 实现 OPEN_ROAD <from_id> <to_id>
-        // 成功输出 "OK"
-        // 若边不存在：ERROR road_not_found
-        std::cerr << "cmdOpenRoad 还没实现" << std::endl;
-        std::cout << "ERROR not_implemented" << std::endl;
+        std::string from_id, to_id;
+        if (!(args >> from_id >> to_id)) {
+            std::cout << "ERROR invalid_arguments" << std::endl;
+            return;
+        }
+
+        if (!graph.exist_edge(from_id, to_id)) {
+            std::cout << "ERROR road_not_found" << std::endl;
+            return;
+        }
+
+        try {
+            graph.OpenRoad(from_id, to_id);
+        } catch (const GraphException &e) {
+            std::cout << "ERROR " << e.what() << std::endl;
+            return;
+        }
+
+        std::cout << "OK" << std::endl;
     }
 
     // ==================== COMPONENTS ====================
     void CommandProcessor::cmdComponents() {
-        // TODO: 实现 COMPONENTS
-        // 输出格式：COMPONENTS <count> SIZES <s1> <s2> ...
-        // 规模按降序输出
-        std::cerr << "cmdComponents 还没实现" << std::endl;
+        // TODO: 阶段 5 实现
         std::cout << "ERROR not_implemented" << std::endl;
     }
 
     // ==================== SHORTEST ====================
     void CommandProcessor::cmdShortest(std::istringstream &args) {
         (void)args;
-        // TODO: 实现 SHORTEST <from_id> <to_id> <DIST|TIME>
-        // 成功输出格式：PATH <DIST|TIME> <total_cost> NODES <id1> <id2> ...
-        // 不可达输出：NO_PATH
-        // 若顶点不存在：ERROR place_not_found
-        std::cerr << "cmdShortest 还没实现" << std::endl;
+        // TODO: 阶段 5 实现
         std::cout << "ERROR not_implemented" << std::endl;
     }
 
     // ==================== TIMED_SHORTEST ====================
     void CommandProcessor::cmdTimedShortest(std::istringstream &args) {
         (void)args;
-        // TODO: 实现 TIMED_SHORTEST <from_id> <to_id> <time> <DIST|TIME>
-        // 含义：在给定时刻（HH:MM）下，找 from_id 到 to_id 的最短路径
-        //   - 只走 status == "open" 的道路
-        //   - 路径上（含起点、终点、中间点）所有地点必须在 time 时开放
-        //     （即 open_time <= time <= close_time，字符串比较即可）
-        // 成功输出格式：PATH <DIST|TIME> <total_cost> NODES <id1> <id2> ...
-        // 不可达输出：NO_PATH
-        // 若顶点不存在：ERROR place_not_found
-        std::cerr << "cmdTimedShortest 还没实现" << std::endl;
+        // TODO: 阶段 5 实现
         std::cout << "ERROR not_implemented" << std::endl;
     }
 
     // ==================== MUST_PASS ====================
     void CommandProcessor::cmdMustPass(std::istringstream &args) {
         (void)args;
-        // TODO: 实现 MUST_PASS <from_id> <to_id> <DIST|TIME> <k> <p1> <p2> ... <pk>
-        // 成功输出格式：PATH <DIST|TIME> <total_cost> NODES <id1> <id2> ...
-        // 不可达输出：NO_PATH
-        // 若顶点不存在：ERROR place_not_found
-        std::cerr << "cmdMustPass 还没实现" << std::endl;
+        // TODO: 阶段 5 实现
         std::cout << "ERROR not_implemented" << std::endl;
     }
 
     // ==================== MST ====================
     void CommandProcessor::cmdMst() {
-        // TODO: 实现 MST
-        // 成功输出格式：MST <total_distance> EDGES <u1>-<v1>:<w1> <u2>-<v2>:<w2> ...
-        // 边按 (min(u,v), max(u,v)) 字典序排序输出
-        // 图不连通输出：DISCONNECTED
-        std::cerr << "cmdMst 还没实现" << std::endl;
+        // TODO: 阶段 5 实现
         std::cout << "ERROR not_implemented" << std::endl;
     }
 
     // ==================== CRITICAL ====================
     void CommandProcessor::cmdCritical() {
-        // TODO: 实现 CRITICAL —— 输出关键节点与关键边
-        // 输出格式：CRITICAL NODES <count> <id1> <id2> ... EDGES <count> <u1>-<v1> <u2>-<v2> ...
-        //   - 关键节点（删去后连通分量数增加的顶点）按 place_id 字典序输出
-        //   - 关键边（删去后连通分量数增加的边）按 (min(u,v), max(u,v)) 字典序输出
-        // 实现可调用 Algorithm::FindCriticalNodesAndEdges(graph)
-        std::cerr << "cmdCritical 还没实现" << std::endl;
+        // TODO: 阶段 5 实现
         std::cout << "ERROR not_implemented" << std::endl;
     }
 

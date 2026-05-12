@@ -199,6 +199,14 @@ namespace Graph {
         UpdateEdge(from_id, to_id, "status", "open");
     }
 
+    // ==================== 清空 ====================
+
+    void LGraph::Clear() {
+        vertices_.clear();
+        adj_.clear();
+        edge_count_ = 0;
+    }
+
     // ==================== 遍历 / 高级查询 ====================
 
     std::vector<std::string> LGraph::AllPlaceIds() const {
