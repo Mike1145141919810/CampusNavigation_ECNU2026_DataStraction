@@ -4,24 +4,97 @@
 //
 
 #include "Algorithm.h"
+#include <queue>
 #include <iostream>
+#include <algorithm>
+#include <unordered_set>
+#include <unordered_map>
+#include <functional>
 
-namespace Graph {
-    namespace Algorithm {
+namespace Graph
+{
+    namespace Algorithm
+    {
+
+        // ==================== 内部辅助：带屏蔽的 BFS ====================
+
+        // 从 start 出发 BFS，仅走 open 边。
+        // blocked_vertex: 被"临时删除"的顶点（跳过，不访问不从它出发）
+        // blocked_edge_keys: 被"临时关闭"的边的 canonical key 集合
+        // visited: 会被修改，标记本次 BFS 访问到的顶点
+        static void bfsComponent(const LGraph &graph,
+                                 const std::string &start,
+                                 std::unordered_set<std::string> &visited,
+                                 const std::string &blocked_vertex,
+                                 const std::unordered_set<std::string> &blocked_edge_keys)
+        {
+            std::queue<std::string> q;
+            q.push(start);
+            visited.insert(start);
+
+            while (!q.empty())
+            {
+                std::string u = q.front();
+                q.pop();
+
+                auto edges = graph.GetAdjacentEdges(u);
+                for (const auto &e : edges)
+                {
+                    if (e.status != "open")
+                        continue;
+                    const std::string &v = e.to_id;
+                    if (v == blocked_vertex)
+                        continue;
+                    if (visited.count(v))
+                        continue;
+
+                    // 检查边是否被屏蔽
+                    std::string ek = (u < v) ? (u + "|" + v) : (v + "|" + u);
+                    if (blocked_edge_keys.count(ek))
+                        continue;
+
+                    visited.insert(v);
+                    q.push(v);
+                }
+            }
+        }
+
+        // 计算连通分量（内部，支持屏蔽参数）
+        static ComponentsResult computeComponents(
+            const LGraph &graph,
+            const std::string &blocked_vertex,
+            const std::unordered_set<std::string> &blocked_edge_keys)
+        {
+
+            auto all_ids = graph.AllPlaceIds();
+            std::unordered_set<std::string> visited;
+            std::vector<int> sizes;
+
+            for (const auto &id : all_ids)
+            {
+                if (id == blocked_vertex)
+                    continue;
+                if (visited.count(id))
+                    continue;
+
+                size_t before = visited.size();
+                bfsComponent(graph, id, visited, blocked_vertex, blocked_edge_keys);
+                int comp_size = static_cast<int>(visited.size() - before);
+                sizes.push_back(comp_size);
+            }
+
+            // 按规模降序排列
+            std::sort(sizes.begin(), sizes.end(), std::greater<int>());
+
+            return ComponentsResult{static_cast<int>(sizes.size()), sizes};
+        }
 
         // ==================== A. 连通分量分析 ====================
 
-        ComponentsResult GetConnectedComponents(const LGraph &graph) {
-            (void)graph;
-            // TODO: 计算图中（仅考虑 open 边）的连通分量个数和各分量规模
-            // 提示：
-            //   1. 使用 BFS 或 DFS 遍历图
-            //   2. 只遍历 status == "open" 的边
-            //   3. 从 graph.AllPlaceIds() 获取当前存在的顶点
-            //   4. 每次从一个未访问的顶点出发，标记所有可达顶点为同一分量
-            //   5. 统计每个分量的大小，最后按降序排列
-            std::cerr << "GetConnectedComponents 还没实现" << std::endl;
-            return ComponentsResult{0, {}};
+        ComponentsResult GetConnectedComponents(const LGraph &graph)
+        {
+            std::unordered_set<std::string> empty_set;
+            return computeComponents(graph, "", empty_set);
         }
 
         // ==================== B. 最短路径 ====================
@@ -29,8 +102,12 @@ namespace Graph {
         PathResult GetShortestPath(const LGraph &graph,
                                    const std::string &from_id,
                                    const std::string &to_id,
-                                   PathMode mode) {
-            (void)graph; (void)from_id; (void)to_id; (void)mode;
+                                   PathMode mode)
+        {
+            (void)graph;
+            (void)from_id;
+            (void)to_id;
+            (void)mode;
             // TODO: 使用 Dijkstra 算法计算最短路径
             // 提示：
             //   1. 根据 mode 选择边权：DIST 使用 distance，TIME 使用 walk_time
@@ -49,8 +126,13 @@ namespace Graph {
                                         const std::string &from_id,
                                         const std::string &to_id,
                                         const std::string &time,
-                                        PathMode mode) {
-            (void)graph; (void)from_id; (void)to_id; (void)time; (void)mode;
+                                        PathMode mode)
+        {
+            (void)graph;
+            (void)from_id;
+            (void)to_id;
+            (void)time;
+            (void)mode;
             // TODO: 在给定时刻 time（HH:MM）下求最短路径
             // 提示：
             //   1. 判断某地点在 time 时是否开放：open_time <= time <= close_time（字符串比较即可）
@@ -68,8 +150,13 @@ namespace Graph {
                                    const std::string &from_id,
                                    const std::string &to_id,
                                    PathMode mode,
-                                   const std::vector<std::string> &waypoints) {
-            (void)graph; (void)from_id; (void)to_id; (void)mode; (void)waypoints;
+                                   const std::vector<std::string> &waypoints)
+        {
+            (void)graph;
+            (void)from_id;
+            (void)to_id;
+            (void)mode;
+            (void)waypoints;
             // TODO: 计算必经点路径
             // 提示：
             //   1. 将路径拆分为多段：from -> w1 -> w2 -> ... -> wk -> to
@@ -83,7 +170,8 @@ namespace Graph {
 
         // ==================== D. 最小生成树 ====================
 
-        std::vector<EdgeNode> MinimumSpanningTree(const LGraph &graph) {
+        std::vector<EdgeNode> MinimumSpanningTree(const LGraph &graph)
+        {
             (void)graph;
             // TODO: 计算最小生成树（在 Kruskal 与 Prim 中任选其一实现）
             //
@@ -106,7 +194,8 @@ namespace Graph {
 
         // ==================== E. 关键节点 / 关键边分析 ====================
 
-        CriticalResult FindCriticalNodesAndEdges(const LGraph &graph) {
+        CriticalResult FindCriticalNodesAndEdges(const LGraph &graph)
+        {
             (void)graph;
             // TODO: 找出"删去后会让图的连通分量数增加"的顶点和边
             //
