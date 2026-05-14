@@ -428,41 +428,150 @@ namespace Graph {
 
     // ==================== COMPONENTS ====================
     void CommandProcessor::cmdComponents() {
-        // TODO: 阶段 5 实现
-        std::cout << "ERROR not_implemented" << std::endl;
+        auto result = Algorithm::GetConnectedComponents(graph);
+        std::cout << "COMPONENTS " << result.count << " SIZES";
+        for (int s : result.sizes) {
+            std::cout << ' ' << s;
+        }
+        std::cout << std::endl;
     }
 
     // ==================== SHORTEST ====================
     void CommandProcessor::cmdShortest(std::istringstream &args) {
-        (void)args;
-        // TODO: 阶段 5 实现
-        std::cout << "ERROR not_implemented" << std::endl;
+        std::string from_id, to_id, mode_str;
+        if (!(args >> from_id >> to_id >> mode_str)) {
+            std::cout << "ERROR invalid_arguments" << std::endl;
+            return;
+        }
+
+        if (!graph.exist_vertex(from_id) || !graph.exist_vertex(to_id)) {
+            std::cout << "ERROR place_not_found" << std::endl;
+            return;
+        }
+
+        Algorithm::PathMode mode = (mode_str == "TIME") ? Algorithm::TIME : Algorithm::DIST;
+        auto result = Algorithm::GetShortestPath(graph, from_id, to_id, mode);
+
+        if (!result.reachable) {
+            std::cout << "NO_PATH" << std::endl;
+            return;
+        }
+
+        std::cout << "PATH " << mode_str << ' ' << result.total_cost << " NODES";
+        for (const auto &id : result.path) {
+            std::cout << ' ' << id;
+        }
+        std::cout << std::endl;
     }
 
     // ==================== TIMED_SHORTEST ====================
     void CommandProcessor::cmdTimedShortest(std::istringstream &args) {
-        (void)args;
-        // TODO: 阶段 5 实现
-        std::cout << "ERROR not_implemented" << std::endl;
+        std::string from_id, to_id, time, mode_str;
+        if (!(args >> from_id >> to_id >> time >> mode_str)) {
+            std::cout << "ERROR invalid_arguments" << std::endl;
+            return;
+        }
+
+        if (!graph.exist_vertex(from_id) || !graph.exist_vertex(to_id)) {
+            std::cout << "ERROR place_not_found" << std::endl;
+            return;
+        }
+
+        Algorithm::PathMode mode = (mode_str == "TIME") ? Algorithm::TIME : Algorithm::DIST;
+        auto result = Algorithm::GetTimedShortestPath(graph, from_id, to_id, time, mode);
+
+        if (!result.reachable) {
+            std::cout << "NO_PATH" << std::endl;
+            return;
+        }
+
+        std::cout << "PATH " << mode_str << ' ' << result.total_cost << " NODES";
+        for (const auto &id : result.path) {
+            std::cout << ' ' << id;
+        }
+        std::cout << std::endl;
     }
 
     // ==================== MUST_PASS ====================
     void CommandProcessor::cmdMustPass(std::istringstream &args) {
-        (void)args;
-        // TODO: 阶段 5 实现
-        std::cout << "ERROR not_implemented" << std::endl;
+        std::string from_id, to_id, mode_str;
+        int k;
+        if (!(args >> from_id >> to_id >> mode_str >> k)) {
+            std::cout << "ERROR invalid_arguments" << std::endl;
+            return;
+        }
+
+        if (!graph.exist_vertex(from_id) || !graph.exist_vertex(to_id)) {
+            std::cout << "ERROR place_not_found" << std::endl;
+            return;
+        }
+
+        std::vector<std::string> waypoints;
+        for (int i = 0; i < k; ++i) {
+            std::string wp;
+            if (!(args >> wp)) {
+                std::cout << "ERROR invalid_arguments" << std::endl;
+                return;
+            }
+            if (!graph.exist_vertex(wp)) {
+                std::cout << "ERROR place_not_found" << std::endl;
+                return;
+            }
+            waypoints.push_back(wp);
+        }
+
+        Algorithm::PathMode mode = (mode_str == "TIME") ? Algorithm::TIME : Algorithm::DIST;
+        auto result = Algorithm::GetMustPassPath(graph, from_id, to_id, mode, waypoints);
+
+        if (!result.reachable) {
+            std::cout << "NO_PATH" << std::endl;
+            return;
+        }
+
+        std::cout << "PATH " << mode_str << ' ' << result.total_cost << " NODES";
+        for (const auto &id : result.path) {
+            std::cout << ' ' << id;
+        }
+        std::cout << std::endl;
     }
 
     // ==================== MST ====================
     void CommandProcessor::cmdMst() {
-        // TODO: 阶段 5 实现
-        std::cout << "ERROR not_implemented" << std::endl;
+        auto mst = Algorithm::MinimumSpanningTree(graph);
+
+        if (mst.empty()) {
+            std::cout << "DISCONNECTED" << std::endl;
+            return;
+        }
+
+        int total = 0;
+        for (const auto &e : mst) {
+            total += e.distance;
+        }
+
+        std::cout << "MST " << total << " EDGES";
+        for (const auto &e : mst) {
+            std::string u = std::min(e.from_id, e.to_id);
+            std::string v = std::max(e.from_id, e.to_id);
+            std::cout << ' ' << u << '-' << v << ':' << e.distance;
+        }
+        std::cout << std::endl;
     }
 
     // ==================== CRITICAL ====================
     void CommandProcessor::cmdCritical() {
-        // TODO: 阶段 5 实现
-        std::cout << "ERROR not_implemented" << std::endl;
+        auto result = Algorithm::FindCriticalNodesAndEdges(graph);
+
+        std::cout << "CRITICAL NODES " << result.critical_nodes.size();
+        for (const auto &id : result.critical_nodes) {
+            std::cout << ' ' << id;
+        }
+
+        std::cout << " EDGES " << result.critical_edges.size();
+        for (const auto &e : result.critical_edges) {
+            std::cout << ' ' << e.first << '-' << e.second;
+        }
+        std::cout << std::endl;
     }
 
 }
