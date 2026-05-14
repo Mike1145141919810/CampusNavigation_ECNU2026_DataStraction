@@ -65,6 +65,8 @@ namespace Graph {
             bool reachable;                     // 是否可达
 
             PathResult() : total_cost(0), reachable(false) {}
+            PathResult(int cost, std::vector<std::string> p, bool r)
+                : total_cost(cost), path(std::move(p)), reachable(r) {}
         };
 
         // ==================== 连通分量结果 ====================
