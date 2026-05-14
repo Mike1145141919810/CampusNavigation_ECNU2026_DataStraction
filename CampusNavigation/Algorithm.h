@@ -20,32 +20,35 @@ namespace Graph {
             std::vector<int> parent, rank_;
         public:
             // 并查集构造函数，初始化 n 个元素
-            explicit DSU(int n) {
-                (void)n;
-                // TODO: 初始化 parent 和 rank_ 数组
-                // 提示：parent[i] = i, rank_[i] = 0
+            explicit DSU(int n) : parent(n), rank_(n, 0) {
+                for (int i = 0; i < n; ++i) {
+                    parent[i] = i;
+                }
             }
 
-            // 查找根节点并路径压缩
             int find(int x) {
-                (void)x;
-                // TODO: 实现带路径压缩的查找
-                return -1;
+                if (parent[x] != x) {
+                    parent[x] = find(parent[x]);  // 路径压缩
+                }
+                return parent[x];
             }
 
-            // 合并两个集合（按秩合并）
             void unite(int x, int y) {
-                (void)x;
-                (void)y;
-                // TODO: 实现按秩合并
+                int rx = find(x), ry = find(y);
+                if (rx == ry) return;
+                // 按秩合并：矮树挂高树
+                if (rank_[rx] < rank_[ry]) {
+                    parent[rx] = ry;
+                } else if (rank_[rx] > rank_[ry]) {
+                    parent[ry] = rx;
+                } else {
+                    parent[ry] = rx;
+                    rank_[rx]++;
+                }
             }
 
-            // 检查两个节点是否属于同一集合
             bool same(int x, int y) {
-                (void)x;
-                (void)y;
-                // TODO: 判断 x 和 y 是否在同一集合
-                return false;
+                return find(x) == find(y);
             }
         };
 
