@@ -59,6 +59,8 @@ namespace Graph {
             cmdMst();
         } else if (cmd == "CRITICAL") {
             cmdCritical();
+        } else if (cmd == "SHORTEST_K") {
+            cmdShortestK(iss);
         } else {
             std::cout << "ERROR unknown_command" << std::endl;
         }
@@ -569,6 +571,48 @@ namespace Graph {
 
         std::cout << " EDGES " << result.critical_edges.size();
         for (const auto &e : result.critical_edges) {
+            std::cout << ' ' << e.first << '-' << e.second;
+        }
+        std::cout << std::endl;
+    }
+
+    // ==================== SHORTEST_K ====================
+    void CommandProcessor::cmdShortestK(std::istringstream &args) {
+        std::string from_id, to_id;
+        int K;
+        if (!(args >> from_id >> to_id >> K)) {
+            std::cout << "ERROR invalid_arguments" << std::endl;
+            return;
+        }
+
+        if (!graph.exist_vertex(from_id) || !graph.exist_vertex(to_id)) {
+            std::cout << "ERROR place_not_found" << std::endl;
+            return;
+        }
+
+        auto result = Algorithm::GetShortestPathK(graph, from_id, to_id, K);
+
+        if (!result.reachable) {
+            std::cout << "NO_PATH" << std::endl;
+            return;
+        }
+
+        std::cout << "PATH " << result.total_time
+                  << " K_USED " << result.k_used
+                  << " NODES";
+        for (const auto &id : result.path) {
+            std::cout << ' ' << id;
+        }
+        // FAST 边按 canonical 字典序排列
+        auto fast_sorted = result.fast_edges;
+        std::sort(fast_sorted.begin(), fast_sorted.end(),
+                  [](const auto &a, const auto &b) {
+                      if (a.first != b.first) return a.first < b.first;
+                      return a.second < b.second;
+                  });
+
+        std::cout << " FAST " << fast_sorted.size();
+        for (const auto &e : fast_sorted) {
             std::cout << ' ' << e.first << '-' << e.second;
         }
         std::cout << std::endl;

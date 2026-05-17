@@ -81,6 +81,17 @@ namespace Graph {
             std::vector<std::pair<std::string, std::string>> critical_edges;  // 关键边（删去后连通分量数增加的边）
         };
 
+        // ==================== 分层图最短路径结果（拓展1） ====================
+        struct PathResultK {
+            int total_time;                              // 最短总时间
+            int k_used;                                  // 实际使用的加速券数量
+            std::vector<std::string> path;               // 完整路径的 place_id 序列
+            std::vector<std::pair<std::string, std::string>> fast_edges;  // 用券的边（canonical 顺序）
+            bool reachable;                              // 是否可达
+
+            PathResultK() : total_time(0), k_used(0), reachable(false) {}
+        };
+
         // ==================== 算法函数 ====================
 
         // A. 连通分量分析
@@ -97,6 +108,15 @@ namespace Graph {
                                    const std::string &from_id,
                                    const std::string &to_id,
                                    PathMode mode);
+
+        // B_plus. 分层图最短路径（拓展1：SHORTEST_K）
+        // 在给定加速券数量 K 下，计算两点间最短时间路径（按 walk_time 优化）
+        // 每张券可将一条边的 walk_time 降低为 ceil(w/3)
+        // 返回：PathResultK 包含总时间、实际用券数、完整路径、用券边列表
+        PathResultK GetShortestPathK(const LGraph &graph,
+                                      const std::string &from_id,
+                                      const std::string &to_id,
+                                      int K);
 
         // B'. 时刻约束最短路径
         // 在给定时刻 time（HH:MM）下计算两点间最短路径

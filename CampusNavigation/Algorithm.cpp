@@ -5,6 +5,8 @@
 
 #include "Algorithm.h"
 #include <queue>
+#include <limits>
+#include <tuple>
 #include <iostream>
 #include <algorithm>
 #include <unordered_set>
@@ -160,6 +162,122 @@ namespace Graph
             std::reverse(path.begin(), path.end());
 
             return PathResult{dist[to_id], path, true};
+        }
+
+        // ==================== B_plus. 分层图最短路径（拓展1） ====================
+
+        PathResultK GetShortestPathK(const LGraph &graph,
+                                      const std::string &from_id,
+                                      const std::string &to_id,
+                                      int K) {
+            if (from_id == to_id) {
+                PathResultK res;
+                res.total_time = 0;
+                res.k_used = 0;
+                res.path = {from_id};
+                res.reachable = true;
+                return res;
+            }
+
+            const int INF = std::numeric_limits<int>::max();
+
+            // dist[v][k] = 到达 v 恰好用 k 张券的最短时间
+            std::unordered_map<std::string, std::unordered_map<int, int>> dist;
+            // prev_node[v][k] = 前驱地点
+            std::unordered_map<std::string, std::unordered_map<int, std::string>> prev_node;
+            // prev_k_map[v][k] = 到达 (v,k) 时上一步的 k 值
+            std::unordered_map<std::string, std::unordered_map<int, int>> prev_k_map;
+            // coupon[v][k] = 到达 (v,k) 时是否在到达边上用了券
+            std::unordered_map<std::string, std::unordered_map<int, bool>> coupon;
+
+            // 优先队列：(time, place_id, k)
+            using PQEntry = std::tuple<int, std::string, int>;
+            std::priority_queue<PQEntry, std::vector<PQEntry>, std::greater<PQEntry>> pq;
+
+            dist[from_id][0] = 0;
+            pq.push({0, from_id, 0});
+
+            int best_time = INF;
+            int best_k = -1;
+
+            while (!pq.empty()) {
+                auto [time, u, k] = pq.top();
+                pq.pop();
+
+                // 陈旧条目
+                auto it_u = dist.find(u);
+                if (it_u == dist.end()) continue;
+                auto it_uk = it_u->second.find(k);
+                if (it_uk == it_u->second.end() || time != it_uk->second) continue;
+
+                if (u == to_id) {
+                    best_time = time;
+                    best_k = k;
+                    break;  // 第一次弹出终点即为最优
+                }
+
+                auto edges = graph.GetAdjacentEdges(u);
+                for (const auto &e : edges) {
+                    if (e.status != "open") continue;
+                    const std::string &v = e.to_id;
+                    int w = e.walk_time;
+
+                    // 分支1：不用券
+                    int nd = time + w;
+                    if (!dist[v].count(k) || nd < dist[v][k]) {
+                        dist[v][k] = nd;
+                        prev_node[v][k] = u;
+                        prev_k_map[v][k] = k;
+                        coupon[v][k] = false;
+                        pq.push({nd, v, k});
+                    }
+
+                    // 分支2：用券（k+1 ≤ K）
+                    if (k + 1 <= K) {
+                        int reduced = (w + 2) / 3;  // ceil(w / 3)
+                        int nd2 = time + reduced;
+                        if (!dist[v].count(k + 1) || nd2 < dist[v][k + 1]) {
+                            dist[v][k + 1] = nd2;
+                            prev_node[v][k + 1] = u;
+                            prev_k_map[v][k + 1] = k;
+                            coupon[v][k + 1] = true;
+                            pq.push({nd2, v, k + 1});
+                        }
+                    }
+                }
+            }
+
+            if (best_time == INF) {
+                return PathResultK();
+            }
+
+            // 回溯路径和用券边
+            std::vector<std::string> path;
+            std::vector<std::pair<std::string, std::string>> fast;
+
+            std::string curr = to_id;
+            int ck = best_k;
+            while (!(curr == from_id && ck == 0)) {
+                path.push_back(curr);
+                std::string pv = prev_node[curr][ck];
+                int pk = prev_k_map[curr][ck];
+                if (coupon[curr][ck]) {
+                    fast.push_back({std::min(pv, curr), std::max(pv, curr)});
+                }
+                curr = pv;
+                ck = pk;
+            }
+            path.push_back(from_id);
+            std::reverse(path.begin(), path.end());
+            std::reverse(fast.begin(), fast.end());
+
+            PathResultK res;
+            res.total_time = best_time;
+            res.k_used = best_k;
+            res.path = std::move(path);
+            res.fast_edges = std::move(fast);
+            res.reachable = true;
+            return res;
         }
 
         // ==================== B'. 时刻约束最短路径 ====================
