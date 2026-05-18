@@ -1,0 +1,9 @@
+place_id,display_name,category,stay_time,open_time,close_time
+P0001,学生宿舍,Dormitory,0,00:00,23:59
+P0002,第一教学楼,Teaching,45,08:00,20:00
+P0003,第二食堂,Dining,30,06:00,21:00
+P0004,图书馆,Teaching,60,08:00,22:00
+P0005,校医院,Medical,20,09:00,17:00
+P0006,体育场,Sports,60,06:00,22:00
+P0007,南门,Other,0,00:00,23:59
+P0008,北门,Other,0,00:00,23:59

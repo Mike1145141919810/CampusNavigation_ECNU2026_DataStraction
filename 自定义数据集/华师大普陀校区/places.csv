@@ -1,0 +1,13 @@
+place_id,display_name,category,stay_time,open_time,close_time
+P0001,华东师大正门,Teaching,30,08:00,22:00
+P0002,金沙江路地铁站,Transport,5,05:30,23:30
+P0003,上海环球港,Shopping,60,10:00,22:00
+P0004,金沙江路公交站,Transport,5,00:00,23:59
+P0005,中山公园地铁站,Transport,5,05:30,23:30
+P0006,龙之梦购物中心,Shopping,60,10:00,22:00
+P0007,华联商厦普陀店,Shopping,40,09:00,21:00
+P0008,长风公园,Scenic,90,06:00,20:00
+P0009,大渡河路地铁站,Transport,5,05:30,23:30
+P0010,华大科技园,Office,30,08:00,20:00
+P0011,隆德路地铁站,Transport,5,05:30,23:30
+P0012,曹杨路地铁站,Transport,5,05:30,23:30
