@@ -306,6 +306,7 @@
     // ==================== 全局状态 ====================
     let places = [], roads = [];
     let placeMap = {}, adj = {};
+    let coord_map = null;  // Loaded from place_coord_map.json
     let mapImage = new Image();
     let mapReady = false;
     let mapWorld = { width: 1160, height: 1920 };
@@ -335,12 +336,33 @@
       mapReady = true;
       mapWorld.width = mapImage.naturalWidth || mapWorld.width;
       mapWorld.height = mapImage.naturalHeight || mapWorld.height;
-      if (places.length) {
+      if (places.length && coord_map) {
         assignPlacePositions();
         fitToView();
       }
       draw();
     };
+    
+    // Pre-load coordinate map on page load
+    (async () => {
+      await loadCoordMap();
+      console.log('Coordinate map loaded, ready for data');
+    })();
+
+    // ==================== 坐标映射加载 ====================
+    async function loadCoordMap() {
+      try {
+        const response = await fetch('place_coord_map.json');
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        coord_map = await response.json();
+        console.log('place_coord_map loaded:', coord_map);
+        return coord_map;
+      } catch (err) {
+        console.warn('Failed to load place_coord_map.json:', err);
+        coord_map = { resolved: [], dormitory_map: [], awaiting_coords: [], gate_points: [] };
+        return null;
+      }
+    }
 
     // ==================== CSV 解析 ====================
     function parseCSV(text) {
@@ -451,10 +473,41 @@
 
     function assignPlacePositions() {
       places.forEach(place => {
+        let x = 0, y = 0;
+        
+        // Try to find in coord_map from place_coord_map.json
+        if (coord_map) {
+          const allLists = [
+            coord_map.resolved || [],
+            coord_map.dormitory_map || [],
+            coord_map.awaiting_coords || [],
+            coord_map.gate_points || []
+          ];
+          
+          for (const list of allLists) {
+            const found = list.find(item => item.place_id === place.id);
+            if (found && found.x !== null && found.y !== null) {
+              x = found.x;
+              y = found.y;
+              place.x = x;
+              place.y = y;
+              return;  // Found and assigned
+            }
+          }
+        }
+        
+        // Fallback: try EXACT_POSITIONS (normalized coords)
         const exact = EXACT_POSITIONS[place.id];
-        const pos = exact ? toWorld(exact[0], exact[1]) : clusterPosition(place);
-        place.x = pos.x;
-        place.y = pos.y;
+        if (exact) {
+          const pos = toWorld(exact[0], exact[1]);
+          place.x = pos.x;
+          place.y = pos.y;
+        } else {
+          // Last fallback: cluster position
+          const pos = clusterPosition(place);
+          place.x = pos.x;
+          place.y = pos.y;
+        }
       });
     }
 
@@ -513,8 +566,10 @@
         st.appendChild(b);
       });
 
-      assignPlacePositions();
-      fitToView();
+      if (coord_map) {
+        assignPlacePositions();
+        fitToView();
+      }
 
       state.pathResult = null;
       state.fromId = null;
