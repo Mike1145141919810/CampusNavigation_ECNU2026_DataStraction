@@ -6,218 +6,32 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>校园导航系统 — 图可视化</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box
-    }
-
-    body {
-      font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
-      background: #1a1a2e;
-      color: #eee;
-      display: flex;
-      height: 100vh;
-      overflow: hidden
-    }
-
-    #sidebar {
-      width: 320px;
-      background: #16213e;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-      overflow-y: auto;
-      border-right: 2px solid #0f3460;
-      flex-shrink: 0
-    }
-
-    #canvas-wrap {
-      flex: 1;
-      position: relative;
-      background: #eef1f6;
-      overflow: hidden;
-      cursor: grab
-    }
-
-    canvas {
-      display: block;
-      width: 100%;
-      height: 100%
-    }
-
-    #tooltip {
-      position: absolute;
-      pointer-events: none;
-      display: none;
-      z-index: 4;
-      background: rgba(16, 24, 40, .95);
-      color: #fff;
-      border: 1px solid rgba(255, 255, 255, .12);
-      border-radius: 8px;
-      padding: 8px 10px;
-      font-size: 12px;
-      line-height: 1.4;
-      box-shadow: 0 10px 28px rgba(0, 0, 0, .25);
-      max-width: 240px
-    }
-
-    #map-hint {
-      position: absolute;
-      left: 16px;
-      top: 16px;
-      z-index: 3;
-      background: rgba(255, 255, 255, .88);
-      backdrop-filter: blur(8px);
-      color: #334155;
-      border: 1px solid rgba(148, 163, 184, .35);
-      border-radius: 10px;
-      padding: 8px 10px;
-      font-size: 12px;
-      line-height: 1.5;
-      box-shadow: 0 8px 24px rgba(15, 23, 42, .12)
-    }
-
-    #map-hint strong {
-      display: block;
-      color: #0f172a;
-      margin-bottom: 2px
-    }
-
-    h2 {
-      color: #e94560;
-      font-size: 18px;
-      border-bottom: 2px solid #e94560;
-      padding-bottom: 8px
-    }
-
-    .section {
-      background: #0f3460;
-      border-radius: 8px;
-      padding: 14px
-    }
-
-    .section h3 {
-      font-size: 14px;
-      color: #f0c040;
-      margin-bottom: 10px
-    }
-
-    .btn {
-      display: inline-block;
-      padding: 6px 14px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 13px;
-      transition: .2s
-    }
-
-    .btn-primary {
-      background: #e94560;
-      color: #fff
-    }
-
-    .btn-primary:hover {
-      background: #ff6b81
-    }
-
-    .btn-accent {
-      background: #2196F3;
-      color: #fff
-    }
-
-    .btn-accent:hover {
-      background: #42a5f5
-    }
-
-    .btn-warn {
-      background: #f0c040;
-      color: #1a1a2e
-    }
-
-    .btn-warn:hover {
-      background: #f5d060
-    }
-
-    .btn-sm {
-      padding: 3px 10px;
-      font-size: 11px
-    }
-
-    .btn-group {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap
-    }
-
-    select,
-    input[type=file] {
-      padding: 5px 8px;
-      border-radius: 4px;
-      border: 1px solid #0f3460;
-      background: #1a1a2e;
-      color: #eee;
-      font-size: 12px;
-      width: 100%
-    }
-
-    label {
-      font-size: 12px;
-      color: #aaa;
-      display: block;
-      margin-bottom: 2px
-    }
-
-    .info-line {
-      font-size: 12px;
-      color: #aaa;
-      display: flex;
-      justify-content: space-between
-    }
-
-    .info-line span {
-      color: #eee
-    }
-
-    #result-box {
-      font-size: 11px;
-      background: #0a1628;
-      border-radius: 4px;
-      padding: 10px;
-      max-height: 200px;
-      overflow-y: auto;
-      font-family: monospace;
-      white-space: pre-wrap;
-      color: #4caf50;
-      line-height: 1.5
-    }
-
-    .legend {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      font-size: 11px
-    }
-
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 4px
-    }
-
-    .legend-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%
-    }
-
-    .file-hint {
-      font-size: 10px;
-      color: #666;
-      margin-top: 2px
-    }
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#0a0e27;color:#e2e8f0;display:flex;height:100vh;overflow:hidden}
+    #sidebar{width:320px;background:#0f172a;padding:20px;display:flex;flex-direction:column;gap:14px;overflow-y:auto;border-right:2px solid #1e293b;flex-shrink:0}
+    #canvas-wrap{flex:1;position:relative;background:#0f172a;overflow:hidden;cursor:grab}
+    canvas{display:block;width:100%;height:100%}
+    #tooltip{position:absolute;pointer-events:none;display:none;z-index:4;background:rgba(15,23,42,.96);color:#e2e8f0;border:1px solid rgba(148,163,184,.2);border-radius:8px;padding:8px 10px;font-size:12px;line-height:1.4;box-shadow:0 10px 28px rgba(0,0,0,.4);max-width:240px}
+    h2{color:#f87171;font-size:18px;border-bottom:2px solid #f87171;padding-bottom:8px}
+    .section{background:#1e293b;border-radius:8px;padding:14px}
+    .section h3{font-size:14px;color:#fbbf24;margin-bottom:10px}
+    .btn{display:inline-block;padding:6px 14px;border:none;border-radius:4px;cursor:pointer;font-size:13px;transition:.2s}
+    .btn-primary{background:#f87171;color:#fff}.btn-primary:hover{background:#fca5a5}
+    .btn-accent{background:#38bdf8;color:#0f172a}.btn-accent:hover{background:#7dd3fc}
+    .btn-warn{background:#fbbf24;color:#0f172a}.btn-warn:hover{background:#fcd34d}
+    .btn-sm{padding:3px 10px;font-size:11px}
+    .btn-group{display:flex;gap:6px;flex-wrap:wrap}
+    select,input[type=file]{padding:5px 8px;border-radius:4px;border:1px solid #334155;background:#0f172a;color:#e2e8f0;font-size:12px;width:100%}
+    label{font-size:12px;color:#94a3b8;display:block;margin-bottom:2px}
+    .info-line{font-size:12px;color:#94a3b8;display:flex;justify-content:space-between}
+    .info-line span{color:#e2e8f0}
+    #result-box{font-size:11px;background:#020617;border-radius:4px;padding:10px;max-height:200px;overflow-y:auto;font-family:monospace;white-space:pre-wrap;color:#4ade80;line-height:1.5}
+    .legend{display:flex;gap:10px;flex-wrap:wrap;font-size:11px}
+    .legend-item{display:flex;align-items:center;gap:4px}
+    .legend-dot{width:10px;height:10px;border-radius:50%}
+    .file-hint{font-size:10px;color:#64748b;margin-top:2px}
+    .ring-legend{display:flex;align-items:center;gap:6px;margin-top:4px}
+    .ring-dot{width:14px;height:14px;border-radius:50%;border:2px dashed rgba(148,163,184,.3);background:transparent}
   </style>
 </head>
 
@@ -232,8 +46,7 @@
       <input type="file" id="file-places" accept=".csv" onchange="checkFiles()">
       <label style="margin-top:6px">道路文件 (roads.csv)</label>
       <input type="file" id="file-roads" accept=".csv" onchange="checkFiles()">
-      <button class="btn btn-primary btn-sm" style="margin-top:6px;width:100%" onclick="loadFiles()" id="btn-load"
-        disabled>加载图数据</button>
+      <button class="btn btn-primary btn-sm" style="margin-top:6px;width:100%" onclick="loadFiles()" id="btn-load" disabled>加载图数据</button>
       <div class="file-hint">默认加载项目数据（87节点/26边）</div>
     </div>
 
@@ -271,34 +84,26 @@
     <div class="section">
       <h3>📋 图例</h3>
       <div class="legend">
-        <div class="legend-item">
-          <div class="legend-dot" style="background:#4CAF50"></div> open 边
-        </div>
-        <div class="legend-item">
-          <div class="legend-dot" style="background:#f44336"></div> closed 边
-        </div>
-        <div class="legend-item">
-          <div class="legend-dot" style="background:#e94560"></div> 最短路径
-        </div>
-        <div class="legend-item">
-          <div class="legend-dot" style="border:2px solid #f0c040;background:transparent"></div> 关键节点
-        </div>
-        <div class="legend-item">
-          <div class="legend-dot" style="background:#ff9800;border-radius:0;width:14px;height:3px"></div> 关键边
-        </div>
+        <div class="legend-item"><div class="legend-dot" style="background:#4ade80"></div> open 边</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#f87171"></div> closed 边</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#e94560"></div> 最短路径</div>
+        <div class="legend-item"><div class="legend-dot" style="border:2px solid #fbbf24;background:transparent"></div> 关键节点</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#fb923c;border-radius:0;width:14px;height:3px"></div> 关键边</div>
+      </div>
+      <div class="ring-legend">
+        <div class="ring-dot"></div>
+        <span style="font-size:11px;color:#94a3b8">虚线圈 = 不连通分量（同心圆排列）</span>
       </div>
     </div>
 
     <div class="section">
       <h3>📝 结果</h3>
-      <div id="result-box">加载数据后，点击节点选择起终点<br>或从下拉菜单选择后点击"查询路径"<br><br>操作提示：<br>• 悬停节点查看详情<br>• 点击节点选择起/终点<br>•
-        滚轮缩放，拖拽平移地图</div>
+      <div id="result-box">加载后点击节点选择起终点<br>或从下拉菜单选择后点击"查询路径"<br><br>🖱 滚轮缩放 · 拖拽平移 · 点击选点</div>
     </div>
   </div>
 
   <div id="canvas-wrap">
     <canvas id="canvas"></canvas>
-    <div id="map-hint"><strong>地图交互</strong>鼠标滚轮缩放，按住拖拽平移，点击点位选起终点。</div>
     <div id="tooltip"></div>
   </div>
 
@@ -306,208 +111,169 @@
     // ==================== 全局状态 ====================
     let places = [], roads = [];
     let placeMap = {}, adj = {};
-    let coord_map = null;  // Loaded from place_coord_map.json
-    let mapImage = new Image();
-    let mapReady = false;
-    let mapWorld = { width: 1160, height: 1920 };
-    let view = { scale: 1, offsetX: 0, offsetY: 0, minScale: 0.2, maxScale: 4 };
+    let layoutBounds = { minX: -900, maxX: 900, minY: -650, maxY: 650 };
+    let view = { scale: 1, offsetX: 0, offsetY: 0, minScale: 0.12, maxScale: 6 };
+    let layoutComponents = []; // Store components info for rendering rings
     let state = {
-      fromId: null,
-      toId: null,
-      pathResult: null,
-      showCritical: false,
-      showComponents: false,
-      critical: null,
-      components: null,
-      hoverNode: null,
-      dragging: false,
-      dragStartX: 0,
-      dragStartY: 0,
-      dragOriginX: 0,
-      dragOriginY: 0
+      fromId: null, toId: null, pathResult: null,
+      showCritical: false, showComponents: false,
+      critical: null, components: null, hoverNode: null,
+      dragging: false, dragStartX: 0, dragStartY: 0, dragOriginX: 0, dragOriginY: 0
     };
 
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
     const tooltip = document.getElementById('tooltip');
 
-    mapImage.src = 'map.png';
-    mapImage.onload = () => {
-      mapReady = true;
-      mapWorld.width = mapImage.naturalWidth || mapWorld.width;
-      mapWorld.height = mapImage.naturalHeight || mapWorld.height;
-      if (places.length && coord_map) {
-        assignPlacePositions();
-        fitToView();
-      }
-      draw();
-    };
-
-    // Pre-load coordinate map on page load
-    (async () => {
-      await loadCoordMap();
-      console.log('Coordinate map loaded, ready for data');
-    })();
-
-    // ==================== 坐标映射加载 ====================
-    async function loadCoordMap() {
-      try {
-        const response = await fetch('place_coord_map.json');
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        coord_map = await response.json();
-        console.log('place_coord_map loaded:', coord_map);
-        return coord_map;
-      } catch (err) {
-        console.warn('Failed to load place_coord_map.json:', err);
-        coord_map = { resolved: [], dormitory_map: [], awaiting_coords: [], gate_points: [] };
-        return null;
-      }
-    }
-
     // ==================== CSV 解析 ====================
     function parseCSV(text) {
-      return text.split(/\r?\n/)
-        .filter(line => line.trim())
+      return text.split(/\r?\n/).filter(line => line.trim())
         .filter(line => !line.match(/^(place_id|from_id)/i))
-        .map(line => line.split(',').map(part => part.trim()));
+        .map(line => line.split(',').map(p => p.trim()));
     }
 
-    function hashString(text) {
-      let hash = 0;
-      for (let i = 0; i < text.length; i++) {
-        hash = ((hash << 5) - hash + text.charCodeAt(i)) | 0;
+    // ==================== 布局引擎 ====================
+    function runLayout() {
+      if (!places.length) return;
+
+      const openAdj = {};
+      places.forEach(p => { openAdj[p.id] = []; });
+      roads.forEach(r => {
+        if (r.status === 'open' || r.status === undefined) {
+          openAdj[r.from].push(r.to); openAdj[r.to].push(r.from);
+        }
+      });
+
+      // Find connected components (open edges only)
+      const visited = new Set();
+      const components = [];
+      for (const p of places) {
+        if (visited.has(p.id)) continue;
+        const comp = [];
+        const q = [p.id]; visited.add(p.id);
+        while (q.length) {
+          const u = q.shift(); comp.push(u);
+          for (const v of openAdj[u]) {
+            if (!visited.has(v)) { visited.add(v); q.push(v); }
+          }
+        }
+        components.push(comp);
       }
-      return Math.abs(hash);
+      components.sort((a, b) => b.length - a.length);
+      layoutComponents = components;
+
+      // Main (largest) component: force-directed in center
+      const mainComp = components[0] || [];
+      const mainSet = new Set(mainComp);
+      forceDirectedLayout(mainSet);
+
+      // Disconnected components: concentric rings
+      let ringIdx = 0;
+      const ringsPerLayer = 8;
+      let ringBaseRadius = 380;
+      for (let i = 1; i < components.length; i++) {
+        const comp = components[i];
+        const layerIdx = Math.floor(ringIdx / ringsPerLayer);
+        const posInLayer = ringIdx % ringsPerLayer;
+        const r = ringBaseRadius + layerIdx * 170;
+        const angleStart = (posInLayer / ringsPerLayer) * Math.PI * 2 + (layerIdx * 0.3);
+        layoutRing(comp, r, angleStart);
+        ringIdx++;
+      }
+      // Mark each component's ring for rendering
+      for (let i = 1; i < components.length; i++) {
+        const comp = components[i];
+        const ringIdx2 = i - 1;
+        const layerIdx = Math.floor(ringIdx2 / ringsPerLayer);
+        const r = ringBaseRadius + layerIdx * 170;
+        comp._ringRadius = r;
+      }
+
+      // Compute bounds
+      let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+      places.forEach(p => {
+        if (p.x < minX) minX = p.x; if (p.x > maxX) maxX = p.x;
+        if (p.y < minY) minY = p.y; if (p.y > maxY) maxY = p.y;
+      });
+      const pad = 120;
+      layoutBounds = { minX: minX - pad, maxX: maxX + pad, minY: minY - pad, maxY: maxY + pad };
     }
 
-    function toWorld(nx, ny) {
-      return { x: nx * mapWorld.width, y: ny * mapWorld.height };
-    }
+    function forceDirectedLayout(nodeSet) {
+      const nodes = places.filter(p => nodeSet.has(p.id));
+      if (nodes.length === 0) return;
+      if (nodes.length === 1) { nodes[0].x = 0; nodes[0].y = 0; return; }
 
-    function addJitter(nx, ny, key, spreadX = 0.01, spreadY = 0.01) {
-      const hash = hashString(key);
-      const jitterX = (((hash % 2000) / 1000) - 1) * spreadX;
-      const jitterY = ((((Math.floor(hash / 2000)) % 2000) / 1000) - 1) * spreadY;
-      return toWorld(nx + jitterX, ny + jitterY);
-    }
+      // Init positions in a circle
+      const cx = 0, cy = 0, spread = Math.min(300, nodes.length * 18);
+      nodes.forEach((n, i) => {
+        const angle = (i / nodes.length) * Math.PI * 2;
+        n.x = cx + Math.cos(angle) * spread;
+        n.y = cy + Math.sin(angle) * spread;
+      });
 
-    const EXACT_POSITIONS = {
-      P0001: [0.82, 0.79], P0002: [0.78, 0.40], P0003: [0.79, 0.56], P0004: [0.84, 0.67],
-      P0005: [0.58, 0.22], P0006: [0.49, 0.22], P0007: [0.72, 0.39], P0008: [0.55, 0.34],
-      P0009: [0.52, 0.28], P0010: [0.30, 0.32], P0011: [0.28, 0.25], P0012: [0.51, 0.26],
-      P0013: [0.47, 0.31], P0014: [0.38, 0.53], P0015: [0.44, 0.35], P0016: [0.43, 0.29],
-      P0017: [0.46, 0.22], P0018: [0.57, 0.23], P0019: [0.63, 0.24], P0020: [0.86, 0.59],
-      P0021: [0.73, 0.31], P0022: [0.69, 0.29], P0023: [0.63, 0.29], P0024: [0.38, 0.47],
-      P0025: [0.38, 0.53], P0026: [0.23, 0.76], P0027: [0.52, 0.69], P0028: [0.46, 0.71],
-      P0029: [0.47, 0.80], P0030: [0.45, 0.84], P0031: [0.44, 0.88], P0032: [0.49, 0.74],
-      P0033: [0.42, 0.73], P0034: [0.44, 0.66], P0035: [0.35, 0.78], P0036: [0.37, 0.80],
-      P0037: [0.49, 0.60], P0038: [0.52, 0.58], P0039: [0.47, 0.62], P0040: [0.41, 0.55],
-      P0041: [0.38, 0.54], P0042: [0.36, 0.48], P0043: [0.56, 0.63], P0044: [0.61, 0.66],
-      P0045: [0.18, 0.62], P0046: [0.78, 0.83], P0047: [0.20, 0.58], P0048: [0.40, 0.70],
-      P0049: [0.49, 0.67], P0050: [0.50, 0.66], P0051: [0.60, 0.60], P0052: [0.53, 0.73],
-      P0053: [0.44, 0.69], P0054: [0.47, 0.70], P0055: [0.49, 0.73], P0056: [0.52, 0.69],
-      P0057: [0.57, 0.71], P0058: [0.68, 0.78], P0059: [0.71, 0.80], P0060: [0.75, 0.58],
-      P0061: [0.73, 0.67], P0062: [0.75, 0.69], P0063: [0.80, 0.71], P0064: [0.81, 0.74],
-      P0065: [0.23, 0.88], P0066: [0.27, 0.86], P0067: [0.30, 0.84], P0068: [0.34, 0.82],
-      P0069: [0.38, 0.88], P0070: [0.32, 0.92], P0071: [0.36, 0.94], P0072: [0.40, 0.91],
-      P0073: [0.44, 0.90], P0074: [0.48, 0.89], P0075: [0.52, 0.88], P0076: [0.56, 0.86],
-      P0077: [0.60, 0.85], P0078: [0.64, 0.83], P0079: [0.68, 0.82], P0080: [0.29, 0.95],
-      P0081: [0.33, 0.97], P0082: [0.38, 0.98], P0083: [0.87, 0.52], P0084: [0.50, 0.08],
-      P0085: [0.08, 0.34], P0086: [0.12, 0.83], P0087: [0.88, 0.52]
-    };
+      const area = 900 * 650;
+      const k = Math.sqrt(area / nodes.length) * 0.75;
+      const iterations = 250;
+      const temp0 = Math.max(200, nodes.length * 1.5);
 
-    function clusterPosition(place) {
-      const lower = place.name.toLowerCase();
-      const hash = hashString(place.id + '|' + place.name);
+      for (let iter = 0; iter < iterations; iter++) {
+        const temp = temp0 * Math.pow(1 - iter / iterations, 1.5);
+        const forces = nodes.map(() => ({ fx: 0, fy: 0 }));
 
-      if (/dormitory/i.test(place.name)) {
-        const dormNumber = Number(place.name.match(/\d+/)?.[0] || 0);
-        const row = Math.floor((dormNumber - 2) / 4);
-        const col = (dormNumber - 2) % 4;
-        return addJitter(0.26 + col * 0.035, 0.84 + row * 0.03, place.name, 0.004, 0.004);
-      }
-
-      if (lower.includes('canteen')) {
-        if (lower.includes('hexi')) return addJitter(0.20, 0.58, place.name, 0.01, 0.01);
-        if (lower.includes('hedong')) return addJitter(0.79, 0.56, place.name, 0.01, 0.01);
-        if (lower.includes('riva')) return addJitter(0.35, 0.79, place.name, 0.01, 0.01);
-        return addJitter(0.50, 0.62, place.name, 0.01, 0.01);
-      }
-
-      if (lower.includes('gate') || lower.includes('zhongshan') || lower.includes('zaoyang') || lower.includes('xianfeng')) {
-        return addJitter(0.85 - ((hash % 3) * 0.05), 0.50 + (((hash >> 2) % 3) * 0.05), place.name, 0.01, 0.01);
-      }
-
-      if (lower.includes('stadium') || lower.includes('gymnasium') || lower.includes('sports')) {
-        return addJitter(0.79, 0.80, place.name, 0.015, 0.015);
-      }
-
-      if (lower.includes('library') || lower.includes('archives') || lower.includes('office') || lower.includes('press') || lower.includes('publishing') || lower.includes('graduate')) {
-        return addJitter(0.60, 0.24 + ((hash % 4) * 0.02), place.name, 0.01, 0.01);
-      }
-
-      if (lower.includes('science') || lower.includes('physics') || lower.includes('chemistry') || lower.includes('mathematics') || lower.includes('computer') || lower.includes('electron') || lower.includes('hydraulic') || lower.includes('microwave') || lower.includes('pavlov') || lower.includes('wildlife') || lower.includes('primate') || lower.includes('temperature') || lower.includes('laboratory')) {
-        return addJitter(0.50 + ((hash % 5) - 2) * 0.03, 0.63 + (((hash >> 3) % 5) - 2) * 0.03, place.name, 0.01, 0.01);
-      }
-
-      if (lower.includes('international') || lower.includes('fashion') || lower.includes('design') || lower.includes('experimental') || lower.includes('teaching_building') || lower.includes('school')) {
-        return addJitter(0.77 + ((hash % 3) * 0.02), 0.70 + (((hash >> 2) % 4) * 0.02), place.name, 0.012, 0.012);
-      }
-
-      if (lower.includes('student') || lower.includes('auditorium') || lower.includes('alumni') || lower.includes('union') || lower.includes('veteran') || lower.includes('activity')) {
-        return addJitter(0.40 + ((hash % 5) - 2) * 0.03, 0.30 + (((hash >> 2) % 4) * 0.03), place.name, 0.012, 0.012);
-      }
-
-      if (lower.includes('hospital') || lower.includes('medical')) {
-        return addJitter(0.83, 0.58, place.name, 0.01, 0.01);
-      }
-
-      if (lower.includes('pool') || lower.includes('swimming')) {
-        return addJitter(0.38, 0.53, place.name, 0.01, 0.01);
-      }
-
-      const fallbackSlots = [[0.48, 0.49], [0.54, 0.52], [0.42, 0.57], [0.58, 0.60], [0.44, 0.69], [0.53, 0.71], [0.34, 0.78], [0.64, 0.79]];
-      const slot = fallbackSlots[hash % fallbackSlots.length];
-      return addJitter(slot[0], slot[1], place.name, 0.012, 0.012);
-    }
-
-    function assignPlacePositions() {
-      places.forEach(place => {
-        let x = 0, y = 0;
-
-        // Try to find in coord_map from place_coord_map.json
-        if (coord_map) {
-          const allLists = [
-            coord_map.resolved || [],
-            coord_map.dormitory_map || [],
-            coord_map.awaiting_coords || [],
-            coord_map.gate_points || []
-          ];
-
-          for (const list of allLists) {
-            const found = list.find(item => item.place_id === place.id);
-            if (found && found.x !== null && found.y !== null) {
-              x = found.x;
-              y = found.y;
-              place.x = x;
-              place.y = y;
-              return;  // Found and assigned
-            }
+        // Repulsive (Barnes-Hut simplified: all pairs for < 300 nodes)
+        for (let i = 0; i < nodes.length; i++) {
+          for (let j = i + 1; j < nodes.length; j++) {
+            let dx = nodes[i].x - nodes[j].x, dy = nodes[i].y - nodes[j].y;
+            let dist = Math.sqrt(dx * dx + dy * dy) || 0.01;
+            const fr = k * k / dist;
+            forces[i].fx += (dx / dist) * fr; forces[i].fy += (dy / dist) * fr;
+            forces[j].fx -= (dx / dist) * fr; forces[j].fy -= (dy / dist) * fr;
           }
         }
 
-        // Fallback: try EXACT_POSITIONS (normalized coords)
-        const exact = EXACT_POSITIONS[place.id];
-        if (exact) {
-          const pos = toWorld(exact[0], exact[1]);
-          place.x = pos.x;
-          place.y = pos.y;
-        } else {
-          // Last fallback: cluster position
-          const pos = clusterPosition(place);
-          place.x = pos.x;
-          place.y = pos.y;
+        // Attractive
+        for (const r of roads) {
+          if (!nodeSet.has(r.from) || !nodeSet.has(r.to)) continue;
+          const a = placeMap[r.from], b = placeMap[r.to];
+          if (!a || !b) continue;
+          let dx = a.x - b.x, dy = a.y - b.y;
+          let dist = Math.sqrt(dx * dx + dy * dy) || 0.01;
+          const fa = dist * dist / k;
+          const ai = nodes.indexOf(a), bi = nodes.indexOf(b);
+          if (ai >= 0) { forces[ai].fx -= (dx / dist) * fa; forces[ai].fy -= (dy / dist) * fa; }
+          if (bi >= 0) { forces[bi].fx += (dx / dist) * fa; forces[bi].fy += (dy / dist) * fa; }
         }
+
+        // Apply with temp clamping
+        for (let i = 0; i < nodes.length; i++) {
+          const f = forces[i];
+          const mag = Math.sqrt(f.fx * f.fx + f.fy * f.fy) || 0;
+          const clamp = Math.min(mag, temp) / mag;
+          nodes[i].x += f.fx * clamp;
+          nodes[i].y += f.fy * clamp;
+        }
+      }
+
+      // Center the graph
+      let sx = 0, sy = 0;
+      nodes.forEach(n => { sx += n.x; sy += n.y; });
+      const ox = sx / nodes.length, oy = sy / nodes.length;
+      nodes.forEach(n => { n.x -= ox; n.y -= oy; });
+    }
+
+    function layoutRing(nodeIds, radius, angleStart) {
+      const n = nodeIds.length;
+      // For 1-2 nodes, space them out slightly
+      const arcSpan = n <= 2 ? Math.PI * 0.4 : Math.PI * 1.8;
+      const startAngle = n <= 2 ? angleStart - arcSpan / 2 : angleStart;
+      nodeIds.forEach((id, i) => {
+        const place = placeMap[id];
+        if (!place) return;
+        const frac = n <= 1 ? 0 : i / (n - 1);
+        const angle = startAngle + frac * arcSpan;
+        place.x = Math.cos(angle) * radius;
+        place.y = Math.sin(angle) * radius;
       });
     }
 
@@ -517,21 +283,14 @@
       const rRows = parseCSV(roadsCSV);
 
       places = pRows.map(r => ({
-        id: r[0],
-        name: r[1],
-        cat: r[2],
-        stay: parseInt(r[3], 10) || 0,
-        open: r[4] || '00:00',
-        close: r[5] || '23:59',
-        x: 0,
-        y: 0
+        id: r[0], name: r[1], cat: r[2],
+        stay: parseInt(r[3], 10) || 0, open: r[4] || '00:00', close: r[5] || '23:59',
+        x: 0, y: 0
       }));
 
       roads = rRows.map(r => ({
-        from: r[0],
-        to: r[1],
-        dist: parseInt(r[2], 10) || 0,
-        time: parseInt(r[3], 10) || 0,
+        from: r[0], to: r[1],
+        dist: parseInt(r[2], 10) || 0, time: parseInt(r[3], 10) || 0,
         status: r[4] || 'open'
       }));
 
@@ -552,39 +311,26 @@
 
       const sf = document.getElementById('sel-from');
       const st = document.getElementById('sel-to');
-      sf.innerHTML = '';
-      st.innerHTML = '';
+      sf.innerHTML = ''; st.innerHTML = '';
       places.forEach(place => {
-        const readable = place.name.replace(/_/g, ' ');
-        const a = document.createElement('option');
-        a.value = place.id;
-        a.textContent = `${place.id} — ${readable}`;
-        sf.appendChild(a);
-        const b = document.createElement('option');
-        b.value = place.id;
-        b.textContent = `${place.id} — ${readable}`;
-        st.appendChild(b);
+        const rd = place.name.replace(/_/g, ' ');
+        const a = document.createElement('option'); a.value = place.id;
+        a.textContent = `${place.id} — ${rd}`; sf.appendChild(a);
+        const b = document.createElement('option'); b.value = place.id;
+        b.textContent = `${place.id} — ${rd}`; st.appendChild(b);
       });
 
-      if (coord_map) {
-        assignPlacePositions();
-        fitToView();
-      }
+      runLayout();
+      fitToView();
 
-      state.pathResult = null;
-      state.fromId = null;
-      state.toId = null;
-      state.showCritical = false;
-      state.showComponents = false;
-      state.critical = null;
-      state.components = null;
-      state.hoverNode = null;
+      state.pathResult = null; state.fromId = null; state.toId = null;
+      state.showCritical = false; state.showComponents = false;
+      state.critical = null; state.components = null; state.hoverNode = null;
 
       document.getElementById('result-box').textContent = '图数据加载完成。滚轮缩放、拖拽平移、点击节点选择起终点。';
       document.getElementById('info-crit-nodes').textContent = '—';
       document.getElementById('info-crit-edges').textContent = '—';
       document.getElementById('info-comp').textContent = '—';
-
       draw();
     }
 
@@ -604,9 +350,7 @@
           if (e.status !== 'open') continue;
           const w = mode === 'DIST' ? e.dist : e.time;
           const nd = dist[u] + w;
-          if (dist[e.to] === undefined || nd < dist[e.to]) {
-            dist[e.to] = nd; prev[e.to] = u;
-          }
+          if (dist[e.to] === undefined || nd < dist[e.to]) { dist[e.to] = nd; prev[e.to] = u; }
         }
       }
       if (dist[toId] === undefined) return null;
@@ -653,12 +397,10 @@
     }
 
     function findComponents() {
-      const visited = new Set();
-      const comps = [];
+      const visited = new Set(); const comps = [];
       for (const p of places) {
         if (visited.has(p.id)) continue;
-        const comp = [];
-        const q = [p.id]; visited.add(p.id);
+        const comp = []; const q = [p.id]; visited.add(p.id);
         while (q.length) {
           const u = q.shift(); comp.push(u);
           for (const e of adj[u]) {
@@ -675,247 +417,245 @@
     function resize() {
       const wrap = document.getElementById('canvas-wrap');
       const ratio = window.devicePixelRatio || 1;
-      const width = Math.max(600, wrap.clientWidth);
-      const height = Math.max(400, wrap.clientHeight);
-      canvas.width = Math.floor(width * ratio);
-      canvas.height = Math.floor(height * ratio);
-      canvas.style.width = `${width}px`;
-      canvas.style.height = `${height}px`;
+      const w = Math.max(600, wrap.clientWidth), h = Math.max(400, wrap.clientHeight);
+      canvas.width = Math.floor(w * ratio); canvas.height = Math.floor(h * ratio);
+      canvas.style.width = `${w}px`; canvas.style.height = `${h}px`;
       ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
-      fitToView();
-      draw();
+      fitToView(); draw();
     }
     window.addEventListener('resize', resize);
 
     function fitToView() {
-      const width = canvas.clientWidth || document.getElementById('canvas-wrap').clientWidth;
-      const height = canvas.clientHeight || document.getElementById('canvas-wrap').clientHeight;
-      const scale = Math.min((width - 32) / mapWorld.width, (height - 32) / mapWorld.height);
+      const w = canvas.clientWidth || 800, h = canvas.clientHeight || 600;
+      const bw = layoutBounds.maxX - layoutBounds.minX || 1800;
+      const bh = layoutBounds.maxY - layoutBounds.minY || 1300;
+      const scale = Math.min((w - 80) / bw, (h - 80) / bh);
       view.scale = Math.max(view.minScale, Math.min(view.maxScale, scale));
-      view.offsetX = (width - mapWorld.width * view.scale) / 2;
-      view.offsetY = (height - mapWorld.height * view.scale) / 2;
+      view.offsetX = (w - bw * view.scale) / 2 - layoutBounds.minX * view.scale;
+      view.offsetY = (h - bh * view.scale) / 2 - layoutBounds.minY * view.scale;
     }
 
-    function screenToWorld(clientX, clientY) {
-      const rect = canvas.getBoundingClientRect();
-      return {
-        x: (clientX - rect.left - view.offsetX) / view.scale,
-        y: (clientY - rect.top - view.offsetY) / view.scale
-      };
+    function screenToWorld(cx, cy) {
+      const r = canvas.getBoundingClientRect();
+      return { x: (cx - r.left - view.offsetX) / view.scale, y: (cy - r.top - view.offsetY) / view.scale };
     }
 
     function worldToScreen(wx, wy) {
       return { x: wx * view.scale + view.offsetX, y: wy * view.scale + view.offsetY };
     }
 
-    function nodeAt(clientX, clientY) {
-      const world = screenToWorld(clientX, clientY);
-      const hitRadius = Math.max(12, 16 / view.scale);
-      const hitRadiusSq = hitRadius * hitRadius;
+    function nodeAt(cx, cy) {
+      const w = screenToWorld(cx, cy);
+      const hr = Math.max(12, 16 / view.scale), hrsq = hr * hr;
       for (let i = places.length - 1; i >= 0; i--) {
-        const place = places[i];
-        const dx = world.x - place.x;
-        const dy = world.y - place.y;
-        if (dx * dx + dy * dy <= hitRadiusSq) return place;
+        const dx = w.x - places[i].x, dy = w.y - places[i].y;
+        if (dx * dx + dy * dy <= hrsq) return places[i];
       }
       return null;
     }
 
     function draw() {
-      const width = canvas.clientWidth || canvas.width;
-      const height = canvas.clientHeight || canvas.height;
-      ctx.clearRect(0, 0, width, height);
+      const w = canvas.clientWidth || canvas.width;
+      const h = canvas.clientHeight || canvas.height;
+      ctx.clearRect(0, 0, w, h);
 
       if (!places.length) {
-        ctx.fillStyle = '#64748b';
-        ctx.font = '20px Microsoft YaHei';
-        ctx.textAlign = 'center';
-        ctx.fillText('请加载 places.csv 和 roads.csv 文件', width / 2, height / 2);
+        ctx.fillStyle = '#94a3b8'; ctx.font = '20px Microsoft YaHei'; ctx.textAlign = 'center';
+        ctx.fillText('请加载 places.csv 和 roads.csv 文件', w / 2, h / 2);
         return;
       }
 
       ctx.save();
       ctx.setTransform(view.scale, 0, 0, view.scale, view.offsetX, view.offsetY);
 
-      if (mapReady) {
-        ctx.drawImage(mapImage, 0, 0, mapWorld.width, mapWorld.height);
-      } else {
-        ctx.fillStyle = '#eef1f6';
-        ctx.fillRect(0, 0, mapWorld.width, mapWorld.height);
-        ctx.fillStyle = '#94a3b8';
-        ctx.font = '18px Microsoft YaHei';
-        ctx.textAlign = 'center';
-        ctx.fillText('地图加载中…', mapWorld.width / 2, mapWorld.height / 2);
+      // Background
+      const bgPad = 600;
+      ctx.fillStyle = '#0a0e27';
+      ctx.fillRect(layoutBounds.minX - bgPad, layoutBounds.minY - bgPad,
+        layoutBounds.maxX - layoutBounds.minX + bgPad * 2, layoutBounds.maxY - layoutBounds.minY + bgPad * 2);
+
+      // Grid dots
+      ctx.fillStyle = 'rgba(56,189,248,.04)';
+      const gs = 100;
+      for (let gx = Math.floor(layoutBounds.minX / gs) * gs; gx <= layoutBounds.maxX; gx += gs) {
+        for (let gy = Math.floor(layoutBounds.minY / gs) * gs; gy <= layoutBounds.maxY; gy += gs) {
+          ctx.beginPath(); ctx.arc(gx, gy, 1.5 / view.scale, 0, Math.PI * 2); ctx.fill();
+        }
       }
 
-      const pathEdgeSet = new Set();
-      const pathNodeSet = new Set();
+      // Draw concentric ring guides for disconnected components
+      if (layoutComponents.length > 1 && state.showComponents) {
+        for (let i = 1; i < layoutComponents.length; i++) {
+          const r = layoutComponents[i]._ringRadius;
+          if (!r) continue;
+          ctx.beginPath();
+          ctx.arc(0, 0, r, 0, Math.PI * 2);
+          ctx.strokeStyle = 'rgba(148,163,184,.08)';
+          ctx.lineWidth = 1.5 / view.scale;
+          ctx.setLineDash([6 / view.scale, 12 / view.scale]);
+          ctx.stroke();
+          ctx.setLineDash([]);
+        }
+      }
+
+      // Path sets
+      const pathEdgeSet = new Set(), pathNodeSet = new Set();
       if (state.pathResult) {
         state.pathResult.path.forEach(id => pathNodeSet.add(id));
         for (let i = 0; i + 1 < state.pathResult.path.length; i++) {
-          const a = state.pathResult.path[i];
-          const b = state.pathResult.path[i + 1];
-          pathEdgeSet.add(`${a}|${b}`);
-          pathEdgeSet.add(`${b}|${a}`);
+          const a = state.pathResult.path[i], b = state.pathResult.path[i + 1];
+          pathEdgeSet.add(`${a}|${b}`); pathEdgeSet.add(`${b}|${a}`);
         }
       }
 
       const critEdgeSet = new Set();
       if (state.showCritical && state.critical) {
         state.critical.edges.forEach(([a, b]) => {
-          critEdgeSet.add(`${a}|${b}`);
-          critEdgeSet.add(`${b}|${a}`);
+          critEdgeSet.add(`${a}|${b}`); critEdgeSet.add(`${b}|${a}`);
         });
       }
 
+      // Component highlight hulls
+      if (state.showComponents && state.components) {
+        const hullColors = [
+          'rgba(56,189,248,.06)', 'rgba(168,85,247,.06)', 'rgba(251,146,60,.06)',
+          'rgba(244,114,182,.06)', 'rgba(52,211,153,.06)', 'rgba(250,204,21,.06)'
+        ];
+        state.components.forEach((comp, idx) => {
+          if (comp.length < 3) return;
+          const pts = comp.map(id => placeMap[id]).filter(Boolean);
+          if (pts.length < 3) return;
+          const hull = convexHull(pts);
+          if (hull.length < 3) return;
+          ctx.fillStyle = hullColors[idx % hullColors.length];
+          ctx.strokeStyle = hullColors[idx % hullColors.length].replace('.06', '.18');
+          ctx.lineWidth = 1.2 / view.scale;
+          ctx.beginPath();
+          ctx.moveTo(hull[0].x, hull[0].y);
+          for (let i = 1; i < hull.length; i++) ctx.lineTo(hull[i].x, hull[i].y);
+          ctx.closePath(); ctx.fill(); ctx.stroke();
+        });
+      }
+
+      // Draw edges (non-path)
       const drawnEdges = new Set();
       for (const road of roads) {
-        const edgeKey = road.from < road.to ? `${road.from}|${road.to}` : `${road.to}|${road.from}`;
-        if (drawnEdges.has(edgeKey)) continue;
-        drawnEdges.add(edgeKey);
-        if (pathEdgeSet.has(`${road.from}|${road.to}`) || pathEdgeSet.has(`${road.to}|${road.from}`)) continue;
-        const from = placeMap[road.from];
-        const to = placeMap[road.to];
+        const ek = road.from < road.to ? `${road.from}|${road.to}` : `${road.to}|${road.from}`;
+        if (drawnEdges.has(ek)) continue;
+        drawnEdges.add(ek);
+        if (pathEdgeSet.has(ek)) continue;
+        const from = placeMap[road.from], to = placeMap[road.to];
         if (!from || !to) continue;
-        ctx.beginPath();
-        ctx.moveTo(from.x, from.y);
-        ctx.lineTo(to.x, to.y);
-        if (critEdgeSet.has(`${road.from}|${road.to}`) || critEdgeSet.has(`${road.to}|${road.from}`)) {
-          ctx.strokeStyle = '#f59e0b';
-          ctx.lineWidth = Math.max(2, 2 / view.scale);
+        ctx.beginPath(); ctx.moveTo(from.x, from.y); ctx.lineTo(to.x, to.y);
+        if (critEdgeSet.has(ek)) {
+          ctx.strokeStyle = '#fb923c'; ctx.lineWidth = Math.max(2, 2 / view.scale);
         } else if (road.status === 'closed') {
-          ctx.strokeStyle = '#ef4444';
-          ctx.lineWidth = Math.max(1.5, 1.5 / view.scale);
+          ctx.strokeStyle = '#f87171'; ctx.lineWidth = Math.max(1.5, 1.5 / view.scale);
           ctx.setLineDash([8 / view.scale, 5 / view.scale]);
         } else {
-          ctx.strokeStyle = 'rgba(34,197,94,.55)';
-          ctx.lineWidth = Math.max(1.5, 1.5 / view.scale);
-          ctx.setLineDash([]);
+          ctx.strokeStyle = 'rgba(74,222,128,.3)'; ctx.lineWidth = Math.max(1, 1.5 / view.scale);
         }
-        ctx.stroke();
-        ctx.setLineDash([]);
+        ctx.stroke(); ctx.setLineDash([]);
       }
 
-      drawnEdges.clear();
+      // Draw path edges on top
       for (const road of roads) {
-        const edgeKey = road.from < road.to ? `${road.from}|${road.to}` : `${road.to}|${road.from}`;
-        if (drawnEdges.has(edgeKey)) continue;
-        if (!pathEdgeSet.has(`${road.from}|${road.to}`) && !pathEdgeSet.has(`${road.to}|${road.from}`)) continue;
-        drawnEdges.add(edgeKey);
-        const from = placeMap[road.from];
-        const to = placeMap[road.to];
+        const ek = road.from < road.to ? `${road.from}|${road.to}` : `${road.to}|${road.from}`;
+        if (!pathEdgeSet.has(ek)) continue;
+        const from = placeMap[road.from], to = placeMap[road.to];
         if (!from || !to) continue;
-        ctx.beginPath();
-        ctx.moveTo(from.x, from.y);
-        ctx.lineTo(to.x, to.y);
-        ctx.strokeStyle = '#e11d48';
-        ctx.lineWidth = Math.max(3, 4 / view.scale);
-        ctx.shadowColor = '#e11d48';
-        ctx.shadowBlur = 12 / view.scale;
-        ctx.stroke();
-        ctx.shadowBlur = 0;
+        ctx.beginPath(); ctx.moveTo(from.x, from.y); ctx.lineTo(to.x, to.y);
+        ctx.strokeStyle = '#e11d48'; ctx.lineWidth = Math.max(3, 4 / view.scale);
+        ctx.shadowColor = '#e11d48'; ctx.shadowBlur = 12 / view.scale; ctx.stroke(); ctx.shadowBlur = 0;
+
         const mode = document.getElementById('sel-mode').value;
         const label = mode === 'DIST' ? `${road.dist}m` : `${road.time}min`;
-        const midX = (from.x + to.x) / 2;
-        const midY = (from.y + to.y) / 2;
-        const offsetX = -(to.y - from.y) * 0.04;
-        const offsetY = (to.x - from.x) * 0.04;
-        ctx.fillStyle = '#b45309';
-        ctx.font = `${Math.max(11, 12 / view.scale)}px monospace`;
-        ctx.textAlign = 'center';
-        ctx.fillText(label, midX + offsetX, midY + offsetY);
+        const mx = (from.x + to.x) / 2, my = (from.y + to.y) / 2;
+        const ox = -(to.y - from.y) * 0.04, oy = (to.x - from.x) * 0.04;
+        ctx.fillStyle = '#fbbf24';
+        ctx.font = `bold ${Math.max(10, 11 / view.scale)}px monospace`;
+        ctx.textAlign = 'center'; ctx.fillText(label, mx + ox, my + oy);
       }
 
-      if (state.showComponents && state.components) {
-        const colors = ['rgba(59,130,246,.08)', 'rgba(16,185,129,.08)', 'rgba(244,114,182,.08)', 'rgba(245,158,11,.08)', 'rgba(139,92,246,.08)'];
-        state.components.forEach((component, index) => {
-          ctx.fillStyle = colors[index % colors.length];
-          component.forEach(id => {
-            const place = placeMap[id];
-            if (!place) return;
-            ctx.beginPath();
-            ctx.arc(place.x, place.y, 26 / view.scale, 0, Math.PI * 2);
-            ctx.fill();
-          });
-        });
-      }
-
-      const categoryColors = {
-        Sports_and_Entertainment: '#e11d48',
-        Teaching_Research_and_Administration: '#2563eb',
-        Dining_room: '#f97316',
-        dormitory: '#22c55e',
-        Medical: '#db2777',
-        other: '#64748b'
+      // Draw nodes
+      const catColors = {
+        Sports_and_Entertainment: '#e11d48', Teaching_Research_and_Administration: '#3b82f6',
+        Dining_room: '#f97316', dormitory: '#22c55e', Medical: '#ec4899', other: '#64748b'
       };
 
       for (const place of places) {
         const isPath = pathNodeSet.has(place.id);
         const isCritical = state.showCritical && state.critical && state.critical.nodes.includes(place.id);
-        const isSelected = place.id === state.fromId || place.id === state.toId;
+        const isSel = place.id === state.fromId || place.id === state.toId;
         const isHover = place.id === state.hoverNode;
         const radius = isHover ? 16 / view.scale : 12 / view.scale;
-        const readableName = place.name.replace(/_/g, ' ');
+        const rn = place.name.replace(/_/g, ' ');
 
-        if (isPath || isSelected) {
+        if (isPath || isSel) {
           ctx.beginPath();
           ctx.arc(place.x, place.y, radius + 6 / view.scale, 0, Math.PI * 2);
-          ctx.fillStyle = isSelected ? 'rgba(225,29,72,.22)' : 'rgba(225,29,72,.12)';
-          ctx.fill();
+          ctx.fillStyle = isSel ? 'rgba(225,29,72,.22)' : 'rgba(225,29,72,.1)'; ctx.fill();
         }
-
         if (isCritical) {
           ctx.beginPath();
           ctx.arc(place.x, place.y, radius + 5 / view.scale, 0, Math.PI * 2);
-          ctx.strokeStyle = '#f59e0b';
-          ctx.lineWidth = Math.max(2, 2 / view.scale);
-          ctx.setLineDash([6 / view.scale, 4 / view.scale]);
-          ctx.stroke();
-          ctx.setLineDash([]);
+          ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = Math.max(2, 2 / view.scale);
+          ctx.setLineDash([6 / view.scale, 4 / view.scale]); ctx.stroke(); ctx.setLineDash([]);
         }
 
         ctx.beginPath();
         ctx.arc(place.x, place.y, radius, 0, Math.PI * 2);
-        ctx.fillStyle = categoryColors[place.cat] || '#334155';
-        ctx.fill();
-        ctx.strokeStyle = isSelected ? '#ffffff' : '#0f172a';
-        ctx.lineWidth = Math.max(1.5, (isSelected ? 2.6 : 1.6) / view.scale);
-        ctx.stroke();
+        ctx.fillStyle = catColors[place.cat] || '#475569'; ctx.fill();
+        ctx.strokeStyle = isSel ? '#fff' : 'rgba(30,41,59,.8)';
+        ctx.lineWidth = Math.max(1.5, (isSel ? 2.6 : 1.6) / view.scale); ctx.stroke();
 
-        ctx.fillStyle = '#fff';
-        ctx.font = `${Math.max(11, 12 / view.scale)}px Microsoft YaHei`;
+        ctx.fillStyle = '#f1f5f9';
+        ctx.font = `bold ${Math.max(10, 11 / view.scale)}px Microsoft YaHei`;
         ctx.textAlign = 'center';
-        const shortLabel = readableName.length > 16 ? `${readableName.slice(0, 15)}…` : readableName;
-        ctx.fillText(shortLabel, place.x, place.y - radius - 4 / view.scale);
-        ctx.fillStyle = '#334155';
-        ctx.font = `${Math.max(9, 10 / view.scale)}px monospace`;
-        ctx.fillText(place.id, place.x, place.y + 4 / view.scale);
+        const sl = rn.length > 14 ? rn.slice(0, 13) + '…' : rn;
+        ctx.fillText(sl, place.x, place.y - radius - 5 / view.scale);
+
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = `${Math.max(8, 9 / view.scale)}px monospace`;
+        ctx.fillText(place.id, place.x, place.y + 3 / view.scale);
       }
 
       ctx.restore();
       updateTooltip();
     }
 
+    function convexHull(points) {
+      if (points.length < 3) return points;
+      const pts = points.slice().sort((a, b) => a.x - b.x || a.y - b.y);
+      const cross = (o, a, b) => (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x);
+      const lo = [];
+      for (const p of pts) {
+        while (lo.length >= 2 && cross(lo[lo.length - 2], lo[lo.length - 1], p) <= 0) lo.pop();
+        lo.push(p);
+      }
+      const up = [];
+      for (let i = pts.length - 1; i >= 0; i--) {
+        while (up.length >= 2 && cross(up[up.length - 2], up[up.length - 1], pts[i]) <= 0) up.pop();
+        up.push(pts[i]);
+      }
+      lo.pop(); up.pop();
+      return lo.concat(up);
+    }
+
     function updateTooltip() {
       const place = state.hoverNode ? placeMap[state.hoverNode] : null;
-      if (!place) {
-        tooltip.style.display = 'none';
-        return;
-      }
-      const screen = worldToScreen(place.x, place.y);
+      if (!place) { tooltip.style.display = 'none'; return; }
+      const s = worldToScreen(place.x, place.y);
       tooltip.style.display = 'block';
-      tooltip.style.left = `${screen.x + 12}px`;
-      tooltip.style.top = `${screen.y - 10}px`;
-      tooltip.innerHTML = `<strong>${place.name.replace(/_/g, ' ')}</strong>${place.id}<br>类别：${place.cat}<br>停留：${place.stay} 分钟`;
+      tooltip.style.left = `${s.x + 14}px`; tooltip.style.top = `${s.y - 10}px`;
+      tooltip.innerHTML = `<strong>${place.name.replace(/_/g, ' ')}</strong> ${place.id}<br>类别：${place.cat}<br>停留：${place.stay} 分钟`;
     }
 
     // ==================== 交互 ====================
     canvas.addEventListener('mousedown', e => {
       state.dragging = true;
-      state.dragStartX = e.clientX;
-      state.dragStartY = e.clientY;
-      state.dragOriginX = view.offsetX;
-      state.dragOriginY = view.offsetY;
+      state.dragStartX = e.clientX; state.dragStartY = e.clientY;
+      state.dragOriginX = view.offsetX; state.dragOriginY = view.offsetY;
       canvas.style.cursor = 'grabbing';
     });
 
@@ -923,34 +663,29 @@
       if (state.dragging) {
         view.offsetX = state.dragOriginX + (e.clientX - state.dragStartX);
         view.offsetY = state.dragOriginY + (e.clientY - state.dragStartY);
-        draw();
-        return;
+        draw(); return;
       }
       const node = nodeAt(e.clientX, e.clientY);
-      const previous = state.hoverNode;
+      const prev = state.hoverNode;
       state.hoverNode = node ? node.id : null;
       canvas.style.cursor = node ? 'pointer' : 'grab';
-      if (previous !== state.hoverNode) draw();
+      if (prev !== state.hoverNode) draw();
     });
 
     window.addEventListener('mouseup', e => {
       if (!state.dragging) return;
-      state.dragging = false;
-      canvas.style.cursor = 'grab';
+      state.dragging = false; canvas.style.cursor = 'grab';
       const moved = Math.abs(e.clientX - state.dragStartX) + Math.abs(e.clientY - state.dragStartY);
       if (moved < 4) {
         const node = nodeAt(e.clientX, e.clientY);
         if (!node) return;
         if (!state.fromId || (state.fromId && state.toId)) {
-          state.fromId = node.id;
-          state.toId = null;
-          state.pathResult = null;
+          state.fromId = node.id; state.toId = null; state.pathResult = null;
         } else {
           state.toId = node.id;
           document.getElementById('sel-from').value = state.fromId;
           document.getElementById('sel-to').value = state.toId;
-          findPath();
-          return;
+          findPath(); return;
         }
         document.getElementById('sel-from').value = state.fromId;
         document.getElementById('sel-to').value = '';
@@ -960,80 +695,66 @@
 
     canvas.addEventListener('mouseleave', () => {
       if (state.dragging) return;
-      state.hoverNode = null;
-      tooltip.style.display = 'none';
-      canvas.style.cursor = 'grab';
-      draw();
+      state.hoverNode = null; tooltip.style.display = 'none';
+      canvas.style.cursor = 'grab'; draw();
     });
 
     canvas.addEventListener('wheel', e => {
       e.preventDefault();
-      const rect = canvas.getBoundingClientRect();
-      const mouseX = e.clientX - rect.left;
-      const mouseY = e.clientY - rect.top;
-      const before = { x: (mouseX - view.offsetX) / view.scale, y: (mouseY - view.offsetY) / view.scale };
-      const zoomFactor = Math.exp(-e.deltaY * 0.0012);
-      const nextScale = Math.max(view.minScale, Math.min(view.maxScale, view.scale * zoomFactor));
-      view.offsetX = mouseX - before.x * nextScale;
-      view.offsetY = mouseY - before.y * nextScale;
-      view.scale = nextScale;
-      draw();
+      const r = canvas.getBoundingClientRect();
+      const mx = e.clientX - r.left, my = e.clientY - r.top;
+      const bf = { x: (mx - view.offsetX) / view.scale, y: (my - view.offsetY) / view.scale };
+      const zf = Math.exp(-e.deltaY * 0.0008);
+      const ns = Math.max(view.minScale, Math.min(view.maxScale, view.scale * zf));
+      view.offsetX = mx - bf.x * ns; view.offsetY = my - bf.y * ns;
+      view.scale = ns; draw();
     }, { passive: false });
 
     canvas.addEventListener('dblclick', e => {
-      const rect = canvas.getBoundingClientRect();
-      const mouseX = e.clientX - rect.left;
-      const mouseY = e.clientY - rect.top;
-      const before = { x: (mouseX - view.offsetX) / view.scale, y: (mouseY - view.offsetY) / view.scale };
-      const nextScale = Math.max(view.minScale, Math.min(view.maxScale, view.scale * 1.3));
-      view.offsetX = mouseX - before.x * nextScale;
-      view.offsetY = mouseY - before.y * nextScale;
-      view.scale = nextScale;
+      const r = canvas.getBoundingClientRect();
+      const mx = e.clientX - r.left, my = e.clientY - r.top;
+      const bf = { x: (mx - view.offsetX) / view.scale, y: (my - view.offsetY) / view.scale };
+      view.scale = Math.min(view.maxScale, view.scale * 1.35);
+      view.offsetX = mx - bf.x * view.scale; view.offsetY = my - bf.y * view.scale;
       draw();
     });
 
-    // ==================== 按钮操作 ====================
+    // ==================== 按钮 ====================
     function findPath() {
-      const fromId = document.getElementById('sel-from').value;
-      const toId = document.getElementById('sel-to').value;
+      const fid = document.getElementById('sel-from').value;
+      const tid = document.getElementById('sel-to').value;
       const mode = document.getElementById('sel-mode').value;
-      if (!fromId || !toId || places.length === 0) return;
-      state.fromId = fromId;
-      state.toId = toId;
-      state.pathResult = dijkstra(fromId, toId, mode);
+      if (!fid || !tid || !places.length) return;
+      state.fromId = fid; state.toId = tid;
+      state.pathResult = dijkstra(fid, tid, mode);
       const box = document.getElementById('result-box');
       if (!state.pathResult) {
-        box.textContent = `NO_PATH — ${fromId} 到 ${toId} 不可达`;
+        box.textContent = `NO_PATH — ${fid} 到 ${tid} 不可达`;
       } else {
-        const costLabel = mode === 'DIST' ? 'm' : 'min';
-        let text = `PATH ${mode} ${state.pathResult.cost} ${costLabel}\nNODES ${state.pathResult.path.join(' → ')}\n`;
+        const cl = mode === 'DIST' ? 'm' : 'min';
+        let t = `PATH ${mode} ${state.pathResult.cost} ${cl}\nNODES ${state.pathResult.path.join(' → ')}\n`;
         for (let i = 0; i + 1 < state.pathResult.path.length; i++) {
-          const a = state.pathResult.path[i];
-          const b = state.pathResult.path[i + 1];
-          const road = roads.find(item => (item.from === a && item.to === b) || (item.from === b && item.to === a));
-          if (road) text += `  ${a}→${b}: ${road.dist}m / ${road.time}min [${road.status}]\n`;
+          const a = state.pathResult.path[i], b = state.pathResult.path[i + 1];
+          const rd = roads.find(r => (r.from === a && r.to === b) || (r.from === b && r.to === a));
+          if (rd) t += `  ${a}→${b}: ${rd.dist}m / ${rd.time}min [${rd.status}]\n`;
         }
-        box.textContent = text;
+        box.textContent = t;
       }
       draw();
     }
 
     function clearPath() {
-      state.pathResult = null;
-      state.fromId = null;
-      state.toId = null;
-      document.getElementById('sel-from').value = '';
-      document.getElementById('sel-to').value = '';
-      document.getElementById('result-box').textContent = '路径已清除。';
-      draw();
+      state.pathResult = null; state.fromId = null; state.toId = null;
+      document.getElementById('sel-from').value = ''; document.getElementById('sel-to').value = '';
+      document.getElementById('result-box').textContent = '路径已清除。'; draw();
     }
 
     function toggleCritical() {
       state.showCritical = !state.showCritical;
-      if (state.showCritical && !state.critical && places.length > 0) {
+      if (state.showCritical && !state.critical && places.length) {
         state.critical = findCritical();
         document.getElementById('info-crit-nodes').textContent = state.critical.nodes.join(', ') || '无';
-        document.getElementById('info-crit-edges').textContent = state.critical.edges.map(edge => edge.join('-')).join(', ') || '无';
+        document.getElementById('info-crit-edges').textContent = state.critical.edges.map(e => e.join('-')).join(', ') || '无';
       }
       if (!state.showCritical) {
         document.getElementById('info-crit-nodes').textContent = '—';
@@ -1044,7 +765,7 @@
 
     function toggleComponents() {
       state.showComponents = !state.showComponents;
-      if (state.showComponents && !state.components && places.length > 0) {
+      if (state.showComponents && !state.components && places.length) {
         state.components = findComponents();
         document.getElementById('info-comp').textContent = state.components.length;
       }
@@ -1056,27 +777,23 @@
 
     function resetLayout() {
       if (!places.length) return;
-      fitToView();
-      draw();
+      runLayout(); fitToView(); draw();
     }
 
     // ==================== 文件加载 ====================
-    let pendingPlaces = null, pendingRoads = null;
     function checkFiles() {
-      const fp = document.getElementById('file-places').files[0];
-      const fr = document.getElementById('file-roads').files[0];
-      document.getElementById('btn-load').disabled = !(fp && fr);
+      document.getElementById('btn-load').disabled = !(
+        document.getElementById('file-places').files[0] && document.getElementById('file-roads').files[0]
+      );
     }
     async function loadFiles() {
       const fp = document.getElementById('file-places').files[0];
       const fr = document.getElementById('file-roads').files[0];
       if (!fp || !fr) return;
-      const pt = await fp.text();
-      const rt = await fr.text();
-      loadData(pt, rt);
+      loadData(await fp.text(), await fr.text());
     }
 
-    // ==================== 默认加载项目数据 ====================
+    // ==================== 默认数据（嵌入式, 87节点 26边） ====================
     const DEFAULT_PLACES = `place_id,display_name,category,stay_time,open_time,close_time
 P0001,stadium,Sports_and_Entertainment,30,00:00,23:59
 P0002,Literature_and_History_Building,Teaching_Research_and_Administration,1,00:00,23:59
