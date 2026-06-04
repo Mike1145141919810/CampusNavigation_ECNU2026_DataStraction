@@ -255,11 +255,13 @@
       <h3>加载数据</h3>
       <label>地点文件 (places.csv)</label>
       <label class="file-label" for="file-places" id="lbl-places">📁 选择文件</label>
-      <input type="file" id="file-places" accept=".csv" onchange="checkFiles();updateFileLabel('file-places','lbl-places')" hidden>
+      <input type="file" id="file-places" accept=".csv"
+        onchange="checkFiles();updateFileLabel('file-places','lbl-places')" hidden>
       <span class="file-name" id="name-places"></span>
       <label style="margin-top:6px">道路文件 (roads.csv)</label>
       <label class="file-label" for="file-roads" id="lbl-roads">📁 选择文件</label>
-      <input type="file" id="file-roads" accept=".csv" onchange="checkFiles();updateFileLabel('file-roads','lbl-roads')" hidden>
+      <input type="file" id="file-roads" accept=".csv" onchange="checkFiles();updateFileLabel('file-roads','lbl-roads')"
+        hidden>
       <span class="file-name" id="name-roads"></span>
       <button class="btn btn-primary btn-sm" style="margin-top:6px;width:100%" onclick="loadFiles()" id="btn-load"
         disabled>加载图数据</button>
@@ -876,7 +878,7 @@
         const ekCanon = road.from < road.to ? `${road.from}-${road.to}` : `${road.to}-${road.from}`;
         const isFast = fastEdges.includes(ekCanon);
         let label = mode === 'DIST' ? `${road.dist}m` : `${road.time}min`;
-        if (mode === 'SHORTEST_K' && isFast) label = `⚡${Math.ceil(road.time/3)}`;
+        if (mode === 'SHORTEST_K' && isFast) label = `⚡${Math.ceil(road.time / 3)}`;
         const mx = (from.x + to.x) / 2, my = (from.y + to.y) / 2;
         const ox = -(to.y - from.y) * 0.04, oy = (to.x - from.x) * 0.04;
         ctx.fillStyle = isFast ? '#facc15' : '#fbbf24';
