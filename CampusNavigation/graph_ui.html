@@ -342,7 +342,7 @@
       }
       draw();
     };
-    
+
     // Pre-load coordinate map on page load
     (async () => {
       await loadCoordMap();
@@ -474,7 +474,7 @@
     function assignPlacePositions() {
       places.forEach(place => {
         let x = 0, y = 0;
-        
+
         // Try to find in coord_map from place_coord_map.json
         if (coord_map) {
           const allLists = [
@@ -483,7 +483,7 @@
             coord_map.awaiting_coords || [],
             coord_map.gate_points || []
           ];
-          
+
           for (const list of allLists) {
             const found = list.find(item => item.place_id === place.id);
             if (found && found.x !== null && found.y !== null) {
@@ -495,7 +495,7 @@
             }
           }
         }
-        
+
         // Fallback: try EXACT_POSITIONS (normalized coords)
         const exact = EXACT_POSITIONS[place.id];
         if (exact) {
