@@ -513,5 +513,121 @@ namespace Graph
 
             return result;
         }
+
+        // ==================== E_plus. Tarjan 算法 O(V+E) 求割点与桥 ====================
+
+        CriticalResult FindCriticalTarjan(const LGraph &graph) {
+            auto ids = graph.AllPlaceIds();
+            std::sort(ids.begin(), ids.end());
+            int n = static_cast<int>(ids.size());
+            if (n == 0) return {{}, {}};
+
+            // 建立 place_id → 整数索引 的双向映射
+            std::unordered_map<std::string, int> idx;
+            std::vector<std::string> id_to_str(n);
+            for (int i = 0; i < n; ++i) {
+                idx[ids[i]] = i;
+                id_to_str[i] = ids[i];
+            }
+
+            std::vector<int> dfn(n, 0), low(n, 0);
+            std::vector<bool> is_cut(n, false);
+            std::vector<std::pair<int, int>> bridges;
+            int timer = 0;
+
+            // 非递归 DFS 状态
+            struct Frame {
+                int u, parent, next_child_idx;
+                bool entered;
+            };
+
+            std::vector<Frame> stack;
+            std::vector<std::vector<int>> children(n);  // 每个根在 DFS 树中的孩子
+
+            for (int start = 0; start < n; ++start) {
+                if (dfn[start] != 0) continue;
+
+                // 启动新 DFS 树
+                stack.push_back({start, -1, 0, false});
+
+                while (!stack.empty()) {
+                    auto &f = stack.back();
+                    int u = f.u, parent = f.parent;
+
+                    if (!f.entered) {
+                        f.entered = true;
+                        dfn[u] = low[u] = ++timer;
+                    }
+
+                    // 遍历 u 的邻接边
+                    auto edges = graph.GetAdjacentEdges(id_to_str[u]);
+                    bool found_child = false;
+
+                    while (f.next_child_idx < static_cast<int>(edges.size())) {
+                        const auto &e = edges[f.next_child_idx++];
+                        if (e.status != "open") continue;
+                        int v = idx[e.to_id];
+
+                        if (v == parent) continue;  // 跳过父节点
+
+                        if (dfn[v] == 0) {
+                            // 树边：递归进入 v
+                            if (parent == -1) children[start].push_back(v);
+                            stack.push_back({v, u, 0, false});
+                            found_child = true;
+                            break;
+                        } else {
+                            // 回边：更新 low[u]
+                            low[u] = std::min(low[u], dfn[v]);
+                        }
+                    }
+
+                    if (!found_child) {
+                        // u 的所有邻边处理完毕，回溯
+                        stack.pop_back();
+
+                        if (parent != -1) {
+                            // 向上传递 low 值
+                            low[parent] = std::min(low[parent], low[u]);
+
+                            // 割点判定：存在子节点 v 使得 low[v] >= dfn[parent]
+                            if (low[u] >= dfn[parent]) {
+                                is_cut[parent] = true;
+                            }
+
+                            // 桥判定：low[v] > dfn[parent]
+                            if (low[u] > dfn[parent]) {
+                                int a = parent, b = u;
+                                if (a > b) std::swap(a, b);
+                                bridges.push_back({a, b});
+                            }
+                        }
+                    }
+                }
+
+                // 根节点割点判定：DFS 树的根有 > 1 个孩子则为割点
+                if (children[start].size() <= 1) {
+                    is_cut[start] = false;
+                }
+            }
+
+            // 收集结果并转换为 string
+            CriticalResult result;
+            for (int i = 0; i < n; ++i) {
+                if (is_cut[i]) result.critical_nodes.push_back(id_to_str[i]);
+            }
+            std::sort(result.critical_nodes.begin(), result.critical_nodes.end());
+
+            for (const auto &[a, b] : bridges) {
+                result.critical_edges.push_back({id_to_str[a], id_to_str[b]});
+            }
+            std::sort(result.critical_edges.begin(), result.critical_edges.end(),
+                      [](const auto &x, const auto &y) {
+                          if (x.first != y.first) return x.first < y.first;
+                          return x.second < y.second;
+                      });
+
+            return result;
+        }
     }
 }

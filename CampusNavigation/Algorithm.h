@@ -159,6 +159,10 @@ namespace Graph {
         //
         // （加分：用 Tarjan 一遍 DFS 同时找出全部关键节点和关键边，O(V+E)。见加分项 §一.4。）
         CriticalResult FindCriticalNodesAndEdges(const LGraph &graph);
+
+        // E_plus. 加分项：Tarjan 算法 O(V+E) 求割点与桥
+        // 维护 dfn[] 和 low[]，一遍 DFS 同时找出全部关键节点和关键边
+        CriticalResult FindCriticalTarjan(const LGraph &graph);
     }
 }
 #endif //CAMPUSNAVIGATION_ALGORITHM_H
