@@ -197,6 +197,38 @@
       margin-top: 2px
     }
 
+    .file-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      background: #1e3a5f;
+      color: #93c5fd;
+      border: 1px dashed #3b5998;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      transition: .2s;
+      user-select: none
+    }
+
+    .file-label:hover {
+      background: #224477;
+      border-color: #60a5fa;
+      color: #bfdbfe
+    }
+
+    .file-name {
+      display: block;
+      font-size: 10px;
+      color: #4ade80;
+      margin-top: 3px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 100%
+    }
+
     .ring-legend {
       display: flex;
       align-items: center;
@@ -222,9 +254,13 @@
     <div class="section">
       <h3>加载数据</h3>
       <label>地点文件 (places.csv)</label>
-      <input type="file" id="file-places" accept=".csv" onchange="checkFiles()">
+      <label class="file-label" for="file-places" id="lbl-places">📁 选择文件</label>
+      <input type="file" id="file-places" accept=".csv" onchange="checkFiles();updateFileLabel('file-places','lbl-places')" hidden>
+      <span class="file-name" id="name-places"></span>
       <label style="margin-top:6px">道路文件 (roads.csv)</label>
-      <input type="file" id="file-roads" accept=".csv" onchange="checkFiles()">
+      <label class="file-label" for="file-roads" id="lbl-roads">📁 选择文件</label>
+      <input type="file" id="file-roads" accept=".csv" onchange="checkFiles();updateFileLabel('file-roads','lbl-roads')" hidden>
+      <span class="file-name" id="name-roads"></span>
       <button class="btn btn-primary btn-sm" style="margin-top:6px;width:100%" onclick="loadFiles()" id="btn-load"
         disabled>加载图数据</button>
       <div class="file-hint">默认加载项目数据（87节点/26边）</div>
@@ -1080,11 +1116,26 @@
         document.getElementById('file-places').files[0] && document.getElementById('file-roads').files[0]
       );
     }
+    function updateFileLabel(inputId, labelId) {
+      const input = document.getElementById(inputId);
+      const nameEl = document.getElementById(labelId.replace('lbl', 'name'));
+      if (input.files.length) {
+        document.getElementById(labelId).textContent = '✅ 已选择';
+        nameEl.textContent = input.files[0].name;
+      } else {
+        document.getElementById(labelId).textContent = '📁 选择文件';
+        nameEl.textContent = '';
+      }
+    }
     async function loadFiles() {
       const fp = document.getElementById('file-places').files[0];
       const fr = document.getElementById('file-roads').files[0];
       if (!fp || !fr) return;
       loadData(await fp.text(), await fr.text());
+      document.getElementById('lbl-places').textContent = '📁 选择文件';
+      document.getElementById('lbl-roads').textContent = '📁 选择文件';
+      document.getElementById('name-places').textContent = '';
+      document.getElementById('name-roads').textContent = '';
     }
 
     // ==================== 默认数据（嵌入式, 87节点 26边） ====================
