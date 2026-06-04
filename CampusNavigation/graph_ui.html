@@ -217,10 +217,10 @@
 <body>
 
   <div id="sidebar">
-    <h2>🏫 校园导航系统</h2>
+    <h2>校园导航系统</h2>
 
     <div class="section">
-      <h3>📂 加载数据</h3>
+      <h3>加载数据</h3>
       <label>地点文件 (places.csv)</label>
       <input type="file" id="file-places" accept=".csv" onchange="checkFiles()">
       <label style="margin-top:6px">道路文件 (roads.csv)</label>
@@ -231,7 +231,7 @@
     </div>
 
     <div class="section">
-      <h3>🔍 最短路径查询</h3>
+      <h3>最短路径查询</h3>
       <label>起点</label>
       <select id="sel-from"></select>
       <label style="margin-top:6px">终点</label>
@@ -248,7 +248,7 @@
     </div>
 
     <div class="section">
-      <h3>📊 图分析</h3>
+      <h3>图分析</h3>
       <div class="btn-group">
         <button class="btn btn-warn btn-sm" onclick="toggleCritical()">关键节点/边</button>
         <button class="btn btn-accent btn-sm" onclick="toggleComponents()">连通分量</button>
@@ -262,7 +262,7 @@
     </div>
 
     <div class="section">
-      <h3>📋 图例</h3>
+      <h3>图例</h3>
       <div class="legend">
         <div class="legend-item">
           <div class="legend-dot" style="background:#4ade80"></div> open 边
@@ -287,7 +287,7 @@
     </div>
 
     <div class="section">
-      <h3>📝 结果</h3>
+      <h3>结果</h3>
       <div id="result-box">加载后点击节点选择起终点<br>或从下拉菜单选择后点击"查询路径"<br><br>🖱 滚轮缩放 · 拖拽平移 · 点击选点</div>
     </div>
   </div>
@@ -394,18 +394,18 @@
       if (nodes.length === 0) return;
       if (nodes.length === 1) { nodes[0].x = 0; nodes[0].y = 0; return; }
 
-      // Init positions in a circle
-      const cx = 0, cy = 0, spread = Math.min(300, nodes.length * 18);
+      // Init positions in a larger circle
+      const cx = 0, cy = 0, spread = Math.min(500, nodes.length * 42);
       nodes.forEach((n, i) => {
         const angle = (i / nodes.length) * Math.PI * 2;
         n.x = cx + Math.cos(angle) * spread;
         n.y = cy + Math.sin(angle) * spread;
       });
 
-      const area = 900 * 650;
-      const k = Math.sqrt(area / nodes.length) * 0.75;
-      const iterations = 250;
-      const temp0 = Math.max(200, nodes.length * 1.5);
+      const area = 1000 * 750;
+      const k = Math.sqrt(area / nodes.length) * 1.6;
+      const iterations = 300;
+      const temp0 = Math.max(300, nodes.length * 3);
 
       for (let iter = 0; iter < iterations; iter++) {
         const temp = temp0 * Math.pow(1 - iter / iterations, 1.5);
@@ -610,7 +610,6 @@
       const w = Math.max(600, wrap.clientWidth), h = Math.max(400, wrap.clientHeight);
       canvas.width = Math.floor(w * ratio); canvas.height = Math.floor(h * ratio);
       canvas.style.width = `${w}px`; canvas.style.height = `${h}px`;
-      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
       fitToView(); draw();
     }
     window.addEventListener('resize', resize);
@@ -637,26 +636,31 @@
     function nodeAt(cx, cy) {
       const w = screenToWorld(cx, cy);
       const hr = Math.max(12, 16 / view.scale), hrsq = hr * hr;
-      for (let i = places.length - 1; i >= 0; i--) {
+      let best = null, bestDist = hrsq;
+      for (let i = 0; i < places.length; i++) {
         const dx = w.x - places[i].x, dy = w.y - places[i].y;
-        if (dx * dx + dy * dy <= hrsq) return places[i];
+        const d2 = dx * dx + dy * dy;
+        if (d2 <= bestDist) { bestDist = d2; best = places[i]; }
       }
-      return null;
+      return best;
     }
 
     function draw() {
-      const w = canvas.clientWidth || canvas.width;
-      const h = canvas.clientHeight || canvas.height;
-      ctx.clearRect(0, 0, w, h);
+      const ratio = window.devicePixelRatio || 1;
+
+      // Clear entire canvas in raw pixel space (no transform)
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       if (!places.length) {
-        ctx.fillStyle = '#94a3b8'; ctx.font = '20px Microsoft YaHei'; ctx.textAlign = 'center';
-        ctx.fillText('请加载 places.csv 和 roads.csv 文件', w / 2, h / 2);
+        ctx.fillStyle = '#94a3b8'; ctx.font = `${20 * ratio}px Microsoft YaHei`; ctx.textAlign = 'center';
+        ctx.fillText('请加载 places.csv 和 roads.csv 文件', canvas.width / 2, canvas.height / 2);
         return;
       }
 
+      // Combined transform: world coords → canvas physical pixels
       ctx.save();
-      ctx.setTransform(view.scale, 0, 0, view.scale, view.offsetX, view.offsetY);
+      ctx.setTransform(view.scale * ratio, 0, 0, view.scale * ratio, view.offsetX * ratio, view.offsetY * ratio);
 
       // Background
       const bgPad = 600;
@@ -800,13 +804,13 @@
         ctx.lineWidth = Math.max(1.5, (isSel ? 2.6 : 1.6) / view.scale); ctx.stroke();
 
         ctx.fillStyle = '#f1f5f9';
-        ctx.font = `bold ${Math.max(10, 11 / view.scale)}px Microsoft YaHei`;
+        ctx.font = `bold ${Math.max(9, 10 / view.scale)}px Microsoft YaHei`;
         ctx.textAlign = 'center';
-        const sl = rn.length > 14 ? rn.slice(0, 13) + '…' : rn;
+        const sl = rn.length > 10 ? rn.slice(0, 9) + '…' : rn;
         ctx.fillText(sl, place.x, place.y - radius - 5 / view.scale);
 
         ctx.fillStyle = '#94a3b8';
-        ctx.font = `${Math.max(8, 9 / view.scale)}px monospace`;
+        ctx.font = `${Math.max(7, 8 / view.scale)}px monospace`;
         ctx.fillText(place.id, place.x, place.y + 3 / view.scale);
       }
 
