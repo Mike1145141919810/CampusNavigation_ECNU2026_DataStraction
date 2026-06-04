@@ -278,8 +278,18 @@
       <select id="sel-mode" onchange="onModeChange()">
         <option value="DIST">DIST — 最短距离</option>
         <option value="TIME">TIME — 最短时间</option>
+        <option value="TIMED_SHORTEST">TIMED_SHORTEST — 时刻约束</option>
         <option value="SHORTEST_K">SHORTEST_K — 加速券</option>
       </select>
+      <div id="time-input-wrap" style="margin-top:6px;display:none">
+        <label>查询时刻（HH:MM）</label>
+        <input type="text" id="sel-time" value="12:00" pattern="[0-9]{2}:[0-9]{2}" style="width:100%">
+        <label style="margin-top:4px">子模式</label>
+        <select id="sel-submode">
+          <option value="TIME">TIME — 最短时间</option>
+          <option value="DIST">DIST — 最短距离</option>
+        </select>
+      </div>
       <div id="k-input-wrap" style="margin-top:6px;display:none">
         <label>加速券数量 K（0~10）</label>
         <input type="number" id="sel-k" value="2" min="0" max="10" style="width:100%">
@@ -877,7 +887,8 @@
         const fastEdges = state.pathResult.fast || [];
         const ekCanon = road.from < road.to ? `${road.from}-${road.to}` : `${road.to}-${road.from}`;
         const isFast = fastEdges.includes(ekCanon);
-        let label = mode === 'DIST' ? `${road.dist}m` : `${road.time}min`;
+        const weightMode = mode === 'TIMED_SHORTEST' ? (state.pathSubMode || 'TIME') : mode;
+        let label = weightMode === 'DIST' ? `${road.dist}m` : `${road.time}min`;
         if (mode === 'SHORTEST_K' && isFast) label = `⚡${Math.ceil(road.time / 3)}`;
         const mx = (from.x + to.x) / 2, my = (from.y + to.y) / 2;
         const ox = -(to.y - from.y) * 0.04, oy = (to.x - from.x) * 0.04;
@@ -1031,7 +1042,36 @@
     // ==================== 按钮 ====================
     function onModeChange() {
       const mode = document.getElementById('sel-mode').value;
+      document.getElementById('time-input-wrap').style.display = mode === 'TIMED_SHORTEST' ? 'block' : 'none';
       document.getElementById('k-input-wrap').style.display = mode === 'SHORTEST_K' ? 'block' : 'none';
+    }
+    // 时刻约束 Dijkstra：仅走 open 边 + 节点在 time 时开放
+    function dijkstraTimed(fromId, toId, mode, time) {
+      const pinfo = placeMap[fromId], tinfo = placeMap[toId];
+      if (!pinfo || !tinfo) return null;
+      if (time < pinfo.open || time > pinfo.close || time < tinfo.open || time > tinfo.close) return null;
+      const dist = {}, prev = {};
+      const unvisited = new Set(places.map(p => p.id));
+      dist[fromId] = 0;
+      while (unvisited.size) {
+        let u = null, best = Infinity;
+        for (const id of unvisited) { if (dist[id] !== undefined && dist[id] < best) { best = dist[id]; u = id; } }
+        if (u === null || u === toId) break;
+        unvisited.delete(u);
+        for (const e of adj[u]) {
+          if (e.status !== 'open') continue;
+          const vp = placeMap[e.to]; if (!vp) continue;
+          if (time < vp.open || time > vp.close) continue;  // 中间节点时间检查
+          const w = mode === 'DIST' ? e.dist : e.time;
+          const nd = dist[u] + w;
+          if (dist[e.to] === undefined || nd < dist[e.to]) { dist[e.to] = nd; prev[e.to] = u; }
+        }
+      }
+      if (dist[toId] === undefined) return null;
+      const path = []; let cur = toId;
+      while (cur !== fromId) { path.push(cur); cur = prev[cur]; }
+      path.push(fromId); path.reverse();
+      return { cost: dist[toId], path };
     }
     function findPath() {
       const fid = document.getElementById('sel-from').value;
@@ -1043,10 +1083,15 @@
       if (mode === 'SHORTEST_K') {
         const K = parseInt(document.getElementById('sel-k').value) || 0;
         state.pathResult = dijkstraK(fid, tid, K);
-        state.pathK = K;
+        state.pathK = K; state.pathTime = null;
+      } else if (mode === 'TIMED_SHORTEST') {
+        const time = document.getElementById('sel-time').value || '12:00';
+        const sub = document.getElementById('sel-submode').value;
+        state.pathResult = dijkstraTimed(fid, tid, sub, time);
+        state.pathK = null; state.pathTime = time; state.pathSubMode = sub;
       } else {
         state.pathResult = dijkstra(fid, tid, mode);
-        state.pathK = null;
+        state.pathK = null; state.pathTime = null;
       }
       const box = document.getElementById('result-box');
       if (!state.pathResult) {
@@ -1058,6 +1103,10 @@
           t = `PATH ${res.cost} K_USED ${res.kUsed} NODES ${res.path.join(' → ')}\nFAST ${res.fast.length}`;
           if (res.fast.length) t += ' ' + res.fast.join(' ');
           t += '\n';
+        } else if (mode === 'TIMED_SHORTEST') {
+          const sub = state.pathSubMode || 'TIME';
+          const cl = sub === 'DIST' ? 'm' : 'min';
+          t = `PATH ${sub} ${res.cost} ${cl} (时刻 ${state.pathTime})\nNODES ${res.path.join(' → ')}\n`;
         } else {
           const cl = mode === 'DIST' ? 'm' : 'min';
           t = `PATH ${mode} ${res.cost} ${cl}\nNODES ${res.path.join(' → ')}\n`;
