@@ -357,16 +357,28 @@
       const mainSet = new Set(mainComp);
       forceDirectedLayout(mainSet);
 
-      // Disconnected components: concentric rings
+      // Compute main component's actual bounding radius
+      let mainRadius = 300;
+      if (mainComp.length) {
+        let maxR2 = 0;
+        for (const id of mainComp) {
+          const p = placeMap[id]; if (!p) continue;
+          const r2 = p.x * p.x + p.y * p.y;
+          if (r2 > maxR2) maxR2 = r2;
+        }
+        mainRadius = Math.sqrt(maxR2);
+      }
+
+      // Disconnected components: concentric rings OUTSIDE main component
       let ringIdx = 0;
-      const ringsPerLayer = 8;
-      let ringBaseRadius = 380;
+      const ringsPerLayer = 10;
+      let ringBaseRadius = mainRadius + 350;
       for (let i = 1; i < components.length; i++) {
         const comp = components[i];
         const layerIdx = Math.floor(ringIdx / ringsPerLayer);
         const posInLayer = ringIdx % ringsPerLayer;
-        const r = ringBaseRadius + layerIdx * 170;
-        const angleStart = (posInLayer / ringsPerLayer) * Math.PI * 2 + (layerIdx * 0.3);
+        const r = ringBaseRadius + layerIdx * 200;
+        const angleStart = (posInLayer / ringsPerLayer) * Math.PI * 2 + (layerIdx * 0.25);
         layoutRing(comp, r, angleStart);
         ringIdx++;
       }
@@ -375,7 +387,7 @@
         const comp = components[i];
         const ringIdx2 = i - 1;
         const layerIdx = Math.floor(ringIdx2 / ringsPerLayer);
-        const r = ringBaseRadius + layerIdx * 170;
+        const r = ringBaseRadius + layerIdx * 200;
         comp._ringRadius = r;
       }
 
