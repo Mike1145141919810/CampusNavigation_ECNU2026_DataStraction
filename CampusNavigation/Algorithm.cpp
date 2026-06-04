@@ -138,7 +138,8 @@ namespace Graph
                     const std::string &v = e.to_id;
 
                     auto it = dist.find(v);
-                    if (it == dist.end() || nd < it->second) {
+                    if (it == dist.end() || nd < it->second ||
+                        (nd == it->second && u < prev[v])) {
                         dist[v] = nd;
                         prev[v] = u;
                         pq.push({nd, v});
@@ -332,7 +333,8 @@ namespace Graph
                     int nd = d + w;
 
                     auto it = dist.find(v);
-                    if (it == dist.end() || nd < it->second) {
+                    if (it == dist.end() || nd < it->second ||
+                        (nd == it->second && u < prev[v])) {
                         dist[v] = nd;
                         prev[v] = u;
                         pq.push({nd, v});
@@ -401,22 +403,38 @@ namespace Graph
 
         std::vector<EdgeNode> MinimumSpanningTree(const LGraph &graph)
         {
-            // 获取所有 open 边
-            auto edges = graph.AllEdges(true);
-
-            // 建立 place_id → 整数索引 映射（用于 DSU）
             auto ids = graph.AllPlaceIds();
+            if (ids.empty()) return {};
             std::sort(ids.begin(), ids.end());
+
+            // 从排序后的节点列表确定性收集边（避免 unordered_map 遍历顺序不确定）
+            std::vector<EdgeNode> edges;
+            std::unordered_set<std::string> seen_edges;
+            for (const auto &id : ids) {
+                auto adj = graph.GetAdjacentEdges(id);
+                for (const auto &e : adj) {
+                    if (e.status != "open") continue;
+                    std::string ek = id < e.to_id ? (id + '|' + e.to_id) : (e.to_id + '|' + id);
+                    if (seen_edges.count(ek)) continue;
+                    seen_edges.insert(ek);
+                    edges.push_back(e);
+                }
+            }
+
+            // Kruskal: 按 distance 升序，等权按 (from,to) 字典序
+            std::sort(edges.begin(), edges.end(),
+                      [](const EdgeNode &a, const EdgeNode &b) {
+                          if (a.distance != b.distance) return a.distance < b.distance;
+                          std::string ak = std::min(a.from_id, a.to_id) + '|' + std::max(a.from_id, a.to_id);
+                          std::string bk = std::min(b.from_id, b.to_id) + '|' + std::max(b.from_id, b.to_id);
+                          return ak < bk;
+                      });
+
+            // Build id→index map
             std::unordered_map<std::string, int> idx;
             for (int i = 0; i < static_cast<int>(ids.size()); ++i) {
                 idx[ids[i]] = i;
             }
-
-            // 按 distance 升序排序
-            std::sort(edges.begin(), edges.end(),
-                      [](const EdgeNode &a, const EdgeNode &b) {
-                          return a.distance < b.distance;
-                      });
 
             DSU dsu(static_cast<int>(ids.size()));
             std::vector<EdgeNode> mst;
@@ -430,7 +448,7 @@ namespace Graph
                 }
             }
 
-            // 不连通：MST 边数应等于顶点数 - 1
+            // 不连通
             if (static_cast<int>(mst.size()) != static_cast<int>(ids.size()) - 1) {
                 return {};
             }
