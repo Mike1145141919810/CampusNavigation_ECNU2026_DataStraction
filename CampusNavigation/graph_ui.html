@@ -237,10 +237,15 @@
       <label style="margin-top:6px">终点</label>
       <select id="sel-to"></select>
       <label style="margin-top:6px">模式</label>
-      <select id="sel-mode">
+      <select id="sel-mode" onchange="onModeChange()">
         <option value="DIST">DIST — 最短距离</option>
         <option value="TIME">TIME — 最短时间</option>
+        <option value="SHORTEST_K">SHORTEST_K — 加速券</option>
       </select>
+      <div id="k-input-wrap" style="margin-top:6px;display:none">
+        <label>加速券数量 K（0~10）</label>
+        <input type="number" id="sel-k" value="2" min="0" max="10" style="width:100%">
+      </div>
       <div class="btn-group" style="margin-top:8px">
         <button class="btn btn-primary" onclick="findPath()">查询路径</button>
         <button class="btn btn-accent" onclick="clearPath()">清除</button>
@@ -562,6 +567,62 @@
       return { cost: dist[toId], path };
     }
 
+    // 分层图 Dijkstra：K 张加速券，每张券可将边耗时降为 ceil(w/3)
+    function dijkstraK(fromId, toId, K) {
+      // dist[v][k] = 到达 v 恰好用 k 张券的最短时间
+      const dist = {}, prevNode = {}, prevK = {}, usedCoupon = {};
+      const INF = Infinity;
+      // 初始化
+      for (const p of places) {
+        dist[p.id] = {}; prevNode[p.id] = {}; prevK[p.id] = {}; usedCoupon[p.id] = {};
+        for (let k = 0; k <= K; k++) { dist[p.id][k] = INF; }
+      }
+      dist[fromId][0] = 0;
+      // 简易 Dijkstra（线性扫描，节点少时足够）
+      const visited = new Set();
+      while (true) {
+        let best = INF, uid = null, uk = -1;
+        for (const p of places) {
+          for (let k = 0; k <= K; k++) {
+            const key = p.id + '|' + k;
+            if (!visited.has(key) && dist[p.id][k] < best) { best = dist[p.id][k]; uid = p.id; uk = k; }
+          }
+        }
+        if (uid === null || uid === toId) break;
+        visited.add(uid + '|' + uk);
+        for (const e of adj[uid]) {
+          if (e.status !== 'open') continue;
+          const v = e.to, w = e.time;
+          // 不用券
+          const nd = best + w;
+          if (nd < dist[v][uk]) { dist[v][uk] = nd; prevNode[v][uk] = uid; prevK[v][uk] = uk; usedCoupon[v][uk] = false; }
+          // 用券
+          if (uk + 1 <= K) {
+            const reduced = Math.ceil(w / 3);
+            const nd2 = best + reduced;
+            if (nd2 < dist[v][uk + 1]) { dist[v][uk + 1] = nd2; prevNode[v][uk + 1] = uid; prevK[v][uk + 1] = uk; usedCoupon[v][uk + 1] = true; }
+          }
+        }
+      }
+      // 找最优 k
+      let bestK = -1, bestCost = INF;
+      for (let k = 0; k <= K; k++) { if (dist[toId][k] < bestCost) { bestCost = dist[toId][k]; bestK = k; } }
+      if (bestK === -1) return null;
+      // 回溯
+      const path = [], fast = [];
+      let cur = toId, ck = bestK;
+      while (!(cur === fromId && ck === 0)) {
+        path.push(cur);
+        const pv = prevNode[cur][ck], pk = prevK[cur][ck];
+        if (usedCoupon[cur][ck]) { const u = pv < cur ? pv : cur, v = pv < cur ? cur : pv; fast.push(u + '-' + v); }
+        cur = pv; ck = pk;
+      }
+      path.push(fromId); path.reverse(); fast.reverse();
+      // 按 canonical 排序 fast edges
+      fast.sort((a, b) => { const [a1, a2] = a.split('-'), [b1, b2] = b.split('-'); return a1 !== b1 ? a1 < b1 ? -1 : 1 : a2 < b2 ? -1 : 1; });
+      return { cost: bestCost, path, kUsed: bestK, fast };
+    }
+
     function bfs(blockedNode, blockedEdgeKey) {
       const visited = new Set(); let comps = 0;
       for (const p of places) {
@@ -775,10 +836,14 @@
         ctx.shadowColor = '#e11d48'; ctx.shadowBlur = 12 / view.scale; ctx.stroke(); ctx.shadowBlur = 0;
 
         const mode = document.getElementById('sel-mode').value;
-        const label = mode === 'DIST' ? `${road.dist}m` : `${road.time}min`;
+        const fastEdges = state.pathResult.fast || [];
+        const ekCanon = road.from < road.to ? `${road.from}-${road.to}` : `${road.to}-${road.from}`;
+        const isFast = fastEdges.includes(ekCanon);
+        let label = mode === 'DIST' ? `${road.dist}m` : `${road.time}min`;
+        if (mode === 'SHORTEST_K' && isFast) label = `⚡${Math.ceil(road.time/3)}`;
         const mx = (from.x + to.x) / 2, my = (from.y + to.y) / 2;
         const ox = -(to.y - from.y) * 0.04, oy = (to.x - from.x) * 0.04;
-        ctx.fillStyle = '#fbbf24';
+        ctx.fillStyle = isFast ? '#facc15' : '#fbbf24';
         ctx.font = `bold ${Math.max(10, 11 / view.scale)}px monospace`;
         ctx.textAlign = 'center'; ctx.fillText(label, mx + ox, my + oy);
       }
@@ -926,23 +991,46 @@
     });
 
     // ==================== 按钮 ====================
+    function onModeChange() {
+      const mode = document.getElementById('sel-mode').value;
+      document.getElementById('k-input-wrap').style.display = mode === 'SHORTEST_K' ? 'block' : 'none';
+    }
     function findPath() {
       const fid = document.getElementById('sel-from').value;
       const tid = document.getElementById('sel-to').value;
       const mode = document.getElementById('sel-mode').value;
       if (!fid || !tid || !places.length) return;
       state.fromId = fid; state.toId = tid;
-      state.pathResult = dijkstra(fid, tid, mode);
+      state.pathMode = mode;
+      if (mode === 'SHORTEST_K') {
+        const K = parseInt(document.getElementById('sel-k').value) || 0;
+        state.pathResult = dijkstraK(fid, tid, K);
+        state.pathK = K;
+      } else {
+        state.pathResult = dijkstra(fid, tid, mode);
+        state.pathK = null;
+      }
       const box = document.getElementById('result-box');
       if (!state.pathResult) {
         box.textContent = `NO_PATH — ${fid} 到 ${tid} 不可达`;
       } else {
-        const cl = mode === 'DIST' ? 'm' : 'min';
-        let t = `PATH ${mode} ${state.pathResult.cost} ${cl}\nNODES ${state.pathResult.path.join(' → ')}\n`;
-        for (let i = 0; i + 1 < state.pathResult.path.length; i++) {
-          const a = state.pathResult.path[i], b = state.pathResult.path[i + 1];
+        const res = state.pathResult;
+        let t;
+        if (mode === 'SHORTEST_K') {
+          t = `PATH ${res.cost} K_USED ${res.kUsed} NODES ${res.path.join(' → ')}\nFAST ${res.fast.length}`;
+          if (res.fast.length) t += ' ' + res.fast.join(' ');
+          t += '\n';
+        } else {
+          const cl = mode === 'DIST' ? 'm' : 'min';
+          t = `PATH ${mode} ${res.cost} ${cl}\nNODES ${res.path.join(' → ')}\n`;
+        }
+        for (let i = 0; i + 1 < res.path.length; i++) {
+          const a = res.path[i], b = res.path[i + 1];
           const rd = roads.find(r => (r.from === a && r.to === b) || (r.from === b && r.to === a));
-          if (rd) t += `  ${a}→${b}: ${rd.dist}m / ${rd.time}min [${rd.status}]\n`;
+          if (rd) {
+            const isFast = res.fast && res.fast.includes((a < b ? a + '-' + b : b + '-' + a));
+            t += `  ${a}→${b}: ${rd.dist}m / ${rd.time}min [${rd.status}]${isFast ? ' ⚡券' : ''}\n`;
+          }
         }
         box.textContent = t;
       }
