@@ -1,0 +1,376 @@
+{
+    "meta": {
+        "width": 1400,
+        "height": 1600,
+        "origin": "top-left",
+        "unit": "px"
+    },
+    "special": [
+        {
+            "id": "hospital",
+            "name": "校医院",
+            "symbol": "+",
+            "x": 1040,
+            "y": 720
+        },
+        {
+            "id": "you_are_here",
+            "name": "当前位置",
+            "symbol": "red_dot",
+            "x": 1250,
+            "y": 820
+        }
+    ],
+    "dormitories": [
+        {
+            "id": "R01",
+            "x": 520,
+            "y": 520
+        },
+        {
+            "id": "R02",
+            "x": 480,
+            "y": 500
+        },
+        {
+            "id": "R03",
+            "x": 430,
+            "y": 720
+        },
+        {
+            "id": "R04",
+            "x": 420,
+            "y": 650
+        },
+        {
+            "id": "R05",
+            "x": 400,
+            "y": 580
+        },
+        {
+            "id": "R06",
+            "x": 450,
+            "y": 680
+        },
+        {
+            "id": "R07",
+            "x": 1180,
+            "y": 540
+        },
+        {
+            "id": "R08",
+            "x": 1150,
+            "y": 600
+        },
+        {
+            "id": "R09",
+            "x": 1120,
+            "y": 520
+        },
+        {
+            "id": "R10",
+            "x": 380,
+            "y": 540
+        },
+        {
+            "id": "R11",
+            "x": 380,
+            "y": 600
+        },
+        {
+            "id": "R12",
+            "x": 380,
+            "y": 660
+        },
+        {
+            "id": "R15",
+            "x": 900,
+            "y": 1050
+        },
+        {
+            "id": "R16",
+            "x": 880,
+            "y": 980
+        },
+        {
+            "id": "R17",
+            "x": 820,
+            "y": 950
+        },
+        {
+            "id": "R18",
+            "x": 780,
+            "y": 950
+        },
+        {
+            "id": "R19",
+            "x": 500,
+            "y": 480
+        },
+        {
+            "id": "R20",
+            "x": 520,
+            "y": 450
+        },
+        {
+            "id": "R21",
+            "x": 600,
+            "y": 1150
+        }
+    ],
+
+    "buildings": [
+        {
+            "id": "01",
+            "name": "开放教育学院楼 / Open Education Department Building",
+            "x": 1120,
+            "y": 1000
+        },
+        {
+            "id": "02",
+            "name": "出版社楼 / East China Normal University Press",
+            "x": 1100,
+            "y": 1050
+        },
+        {
+            "id": "03",
+            "name": "老干部活动室 / Retired Faculty Activities Space",
+            "x": 1050,
+            "y": 1100
+        },
+        {
+            "id": "04",
+            "name": "专家楼 / Foreign Experts Building",
+            "x": 1020,
+            "y": 1020
+        },
+        {
+            "id": "05",
+            "name": "教育部中学校长培训中心 / National Training Center",
+            "x": 1030,
+            "y": 980
+        },
+        {
+            "id": "06",
+            "name": "小学楼 / Elementary Education Building",
+            "x": 1080,
+            "y": 960
+        },
+        {
+            "id": "07",
+            "name": "科学会堂 / Science Hall",
+            "x": 1020,
+            "y": 920
+        },
+        {
+            "id": "08",
+            "name": "电教楼 / Audiovisual Education Building",
+            "x": 1100,
+            "y": 900
+        },
+        {
+            "id": "09",
+            "name": "博物馆 / Bo Qun Hall",
+            "x": 900,
+            "y": 800
+        },
+        {
+            "id": "10",
+            "name": "校史馆 / University History Museum",
+            "x": 1150,
+            "y": 780
+        },
+        {
+            "id": "11",
+            "name": "老图书馆A楼 / Old Library Building A",
+            "x": 900,
+            "y": 700
+        },
+        {
+            "id": "12",
+            "name": "博学楼 / Bo Xue Building",
+            "x": 1000,
+            "y": 650
+        },
+        {
+            "id": "13",
+            "name": "档案馆·藏书楼 / Archive Gallery",
+            "x": 850,
+            "y": 650
+        },
+        {
+            "id": "14",
+            "name": "游泳池 / Swimming Pool",
+            "x": 1050,
+            "y": 650
+        },
+        {
+            "id": "15",
+            "name": "干训楼 / Faculty Development Building",
+            "x": 950,
+            "y": 600
+        },
+        {
+            "id": "16",
+            "name": "大学生活动中心 / Student Activities Center",
+            "x": 850,
+            "y": 550
+        },
+        {
+            "id": "17",
+            "name": "俊秀楼 / Junxiu Building",
+            "x": 900,
+            "y": 520
+        },
+        {
+            "id": "18",
+            "name": "科教楼 / Science Education Building",
+            "x": 1050,
+            "y": 520
+        },
+        {
+            "id": "19",
+            "name": "音乐体育楼 / Music & Physical Education Building",
+            "x": 1150,
+            "y": 520
+        },
+        {
+            "id": "20",
+            "name": "博创楼 / Bo Chuang Building",
+            "x": 1000,
+            "y": 450
+        },
+        {
+            "id": "21",
+            "name": "艺术楼（二附中） / Art Building",
+            "x": 600,
+            "y": 1300
+        },
+        {
+            "id": "22",
+            "name": "办公楼（二附中） / Office Building",
+            "x": 650,
+            "y": 1250
+        },
+        {
+            "id": "23",
+            "name": "阶梯教室（二附中） / Lecture Hall",
+            "x": 700,
+            "y": 1250
+        },
+        {
+            "id": "24",
+            "name": "实验楼（二附中） / Laboratory Building",
+            "x": 750,
+            "y": 1250
+        },
+        {
+            "id": "25",
+            "name": "设计中心 / Design Center",
+            "x": 600,
+            "y": 1200
+        },
+        {
+            "id": "26",
+            "name": "教学楼（一附中） / Academic Building",
+            "x": 700,
+            "y": 1200
+        },
+        {
+            "id": "27",
+            "name": "时尚中心 / Fashion Center",
+            "x": 550,
+            "y": 1150
+        },
+        {
+            "id": "28",
+            "name": "国际交流服务中心 / International Exchange Service Center",
+            "x": 900,
+            "y": 1150
+        },
+        {
+            "id": "29",
+            "name": "国际教育楼 / International Student Office",
+            "x": 900,
+            "y": 1100
+        },
+        {
+            "id": "30",
+            "name": "灵长类动物研究中心 / Primate Research Center",
+            "x": 750,
+            "y": 1050
+        },
+        {
+            "id": "31",
+            "name": "野生动物中心 / Wildlife Research Center",
+            "x": 780,
+            "y": 1000
+        },
+        {
+            "id": "32",
+            "name": "微波所 / Microwave Research Institute",
+            "x": 850,
+            "y": 1000
+        },
+        {
+            "id": "33",
+            "name": "校友之家 / Alumni Center",
+            "x": 780,
+            "y": 950
+        },
+        {
+            "id": "34",
+            "name": "自然地理馆 / Physical Geography Hall",
+            "x": 800,
+            "y": 900
+        },
+        {
+            "id": "35",
+            "name": "海汇楼 / Hai Hui Building",
+            "x": 850,
+            "y": 900
+        },
+        {
+            "id": "36",
+            "name": "计算机楼 / Computer Science Building",
+            "x": 900,
+            "y": 900
+        },
+        {
+            "id": "37",
+            "name": "电镜中心 / Electron Microscope Laboratory",
+            "x": 950,
+            "y": 900
+        },
+        {
+            "id": "38",
+            "name": "数学馆 / Mathematics Hall",
+            "x": 900,
+            "y": 850
+        },
+        {
+            "id": "39",
+            "name": "水工模型实验室 / Hydraulic Model Laboratory",
+            "x": 700,
+            "y": 850
+        },
+        {
+            "id": "40",
+            "name": "化学馆 / Chemistry Hall",
+            "x": 850,
+            "y": 800
+        },
+        {
+            "id": "41",
+            "name": "新四教 / Academic Building No.4 (New)",
+            "x": 800,
+            "y": 800
+        },
+        {
+            "id": "42",
+            "name": "体育馆 / Physical Education Building",
+            "x": 750,
+            "y": 750
+        }
+    ]
+}

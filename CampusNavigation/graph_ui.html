@@ -1,613 +1,1028 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>校园导航系统 — 图可视化</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#1a1a2e;color:#eee;display:flex;height:100vh;overflow:hidden}
-#sidebar{width:320px;background:#16213e;padding:20px;display:flex;flex-direction:column;gap:14px;overflow-y:auto;border-right:2px solid #0f3460;flex-shrink:0}
-#canvas-wrap{flex:1;position:relative;background:#1a1a2e}
-canvas{display:block}
-h2{color:#e94560;font-size:18px;border-bottom:2px solid #e94560;padding-bottom:8px}
-.section{background:#0f3460;border-radius:8px;padding:14px}
-.section h3{font-size:14px;color:#f0c040;margin-bottom:10px}
-.btn{display:inline-block;padding:6px 14px;border:none;border-radius:4px;cursor:pointer;font-size:13px;transition:.2s}
-.btn-primary{background:#e94560;color:#fff}.btn-primary:hover{background:#ff6b81}
-.btn-accent{background:#2196F3;color:#fff}.btn-accent:hover{background:#42a5f5}
-.btn-warn{background:#f0c040;color:#1a1a2e}.btn-warn:hover{background:#f5d060}
-.btn-sm{padding:3px 10px;font-size:11px}
-.btn-group{display:flex;gap:6px;flex-wrap:wrap}
-select,input[type=file]{padding:5px 8px;border-radius:4px;border:1px solid #0f3460;background:#1a1a2e;color:#eee;font-size:12px;width:100%}
-label{font-size:12px;color:#aaa;display:block;margin-bottom:2px}
-.info-line{font-size:12px;color:#aaa;display:flex;justify-content:space-between}
-.info-line span{color:#eee}
-#result-box{font-size:11px;background:#0a1628;border-radius:4px;padding:10px;max-height:200px;overflow-y:auto;font-family:monospace;white-space:pre-wrap;color:#4caf50;line-height:1.5}
-.legend{display:flex;gap:10px;flex-wrap:wrap;font-size:11px}
-.legend-item{display:flex;align-items:center;gap:4px}
-.legend-dot{width:10px;height:10px;border-radius:50%}
-.file-hint{font-size:10px;color:#666;margin-top:2px}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>校园导航系统 — 图可视化</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box
+    }
+
+    body {
+      font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+      background: #1a1a2e;
+      color: #eee;
+      display: flex;
+      height: 100vh;
+      overflow: hidden
+    }
+
+    #sidebar {
+      width: 320px;
+      background: #16213e;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      overflow-y: auto;
+      border-right: 2px solid #0f3460;
+      flex-shrink: 0
+    }
+
+    #canvas-wrap {
+      flex: 1;
+      position: relative;
+      background: #eef1f6;
+      overflow: hidden;
+      cursor: grab
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%
+    }
+
+    #tooltip {
+      position: absolute;
+      pointer-events: none;
+      display: none;
+      z-index: 4;
+      background: rgba(16, 24, 40, .95);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, .12);
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 12px;
+      line-height: 1.4;
+      box-shadow: 0 10px 28px rgba(0, 0, 0, .25);
+      max-width: 240px
+    }
+
+    #map-hint {
+      position: absolute;
+      left: 16px;
+      top: 16px;
+      z-index: 3;
+      background: rgba(255, 255, 255, .88);
+      backdrop-filter: blur(8px);
+      color: #334155;
+      border: 1px solid rgba(148, 163, 184, .35);
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-size: 12px;
+      line-height: 1.5;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, .12)
+    }
+
+    #map-hint strong {
+      display: block;
+      color: #0f172a;
+      margin-bottom: 2px
+    }
+
+    h2 {
+      color: #e94560;
+      font-size: 18px;
+      border-bottom: 2px solid #e94560;
+      padding-bottom: 8px
+    }
+
+    .section {
+      background: #0f3460;
+      border-radius: 8px;
+      padding: 14px
+    }
+
+    .section h3 {
+      font-size: 14px;
+      color: #f0c040;
+      margin-bottom: 10px
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 6px 14px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: .2s
+    }
+
+    .btn-primary {
+      background: #e94560;
+      color: #fff
+    }
+
+    .btn-primary:hover {
+      background: #ff6b81
+    }
+
+    .btn-accent {
+      background: #2196F3;
+      color: #fff
+    }
+
+    .btn-accent:hover {
+      background: #42a5f5
+    }
+
+    .btn-warn {
+      background: #f0c040;
+      color: #1a1a2e
+    }
+
+    .btn-warn:hover {
+      background: #f5d060
+    }
+
+    .btn-sm {
+      padding: 3px 10px;
+      font-size: 11px
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap
+    }
+
+    select,
+    input[type=file] {
+      padding: 5px 8px;
+      border-radius: 4px;
+      border: 1px solid #0f3460;
+      background: #1a1a2e;
+      color: #eee;
+      font-size: 12px;
+      width: 100%
+    }
+
+    label {
+      font-size: 12px;
+      color: #aaa;
+      display: block;
+      margin-bottom: 2px
+    }
+
+    .info-line {
+      font-size: 12px;
+      color: #aaa;
+      display: flex;
+      justify-content: space-between
+    }
+
+    .info-line span {
+      color: #eee
+    }
+
+    #result-box {
+      font-size: 11px;
+      background: #0a1628;
+      border-radius: 4px;
+      padding: 10px;
+      max-height: 200px;
+      overflow-y: auto;
+      font-family: monospace;
+      white-space: pre-wrap;
+      color: #4caf50;
+      line-height: 1.5
+    }
+
+    .legend {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      font-size: 11px
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 4px
+    }
+
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%
+    }
+
+    .file-hint {
+      font-size: 10px;
+      color: #666;
+      margin-top: 2px
+    }
+  </style>
 </head>
+
 <body>
 
-<div id="sidebar">
-  <h2>🏫 校园导航系统</h2>
+  <div id="sidebar">
+    <h2>🏫 校园导航系统</h2>
 
-  <div class="section">
-    <h3>📂 加载数据</h3>
-    <label>地点文件 (places.csv)</label>
-    <input type="file" id="file-places" accept=".csv" onchange="checkFiles()">
-    <label style="margin-top:6px">道路文件 (roads.csv)</label>
-    <input type="file" id="file-roads" accept=".csv" onchange="checkFiles()">
-    <button class="btn btn-primary btn-sm" style="margin-top:6px;width:100%" onclick="loadFiles()" id="btn-load" disabled>加载图数据</button>
-    <div class="file-hint">默认加载项目数据（87节点/26边）</div>
-  </div>
+    <div class="section">
+      <h3>📂 加载数据</h3>
+      <label>地点文件 (places.csv)</label>
+      <input type="file" id="file-places" accept=".csv" onchange="checkFiles()">
+      <label style="margin-top:6px">道路文件 (roads.csv)</label>
+      <input type="file" id="file-roads" accept=".csv" onchange="checkFiles()">
+      <button class="btn btn-primary btn-sm" style="margin-top:6px;width:100%" onclick="loadFiles()" id="btn-load"
+        disabled>加载图数据</button>
+      <div class="file-hint">默认加载项目数据（87节点/26边）</div>
+    </div>
 
-  <div class="section">
-    <h3>🔍 最短路径查询</h3>
-    <label>起点</label>
-    <select id="sel-from"></select>
-    <label style="margin-top:6px">终点</label>
-    <select id="sel-to"></select>
-    <label style="margin-top:6px">模式</label>
-    <select id="sel-mode">
-      <option value="DIST">DIST — 最短距离</option>
-      <option value="TIME">TIME — 最短时间</option>
-    </select>
-    <div class="btn-group" style="margin-top:8px">
-      <button class="btn btn-primary" onclick="findPath()">查询路径</button>
-      <button class="btn btn-accent" onclick="clearPath()">清除</button>
+    <div class="section">
+      <h3>🔍 最短路径查询</h3>
+      <label>起点</label>
+      <select id="sel-from"></select>
+      <label style="margin-top:6px">终点</label>
+      <select id="sel-to"></select>
+      <label style="margin-top:6px">模式</label>
+      <select id="sel-mode">
+        <option value="DIST">DIST — 最短距离</option>
+        <option value="TIME">TIME — 最短时间</option>
+      </select>
+      <div class="btn-group" style="margin-top:8px">
+        <button class="btn btn-primary" onclick="findPath()">查询路径</button>
+        <button class="btn btn-accent" onclick="clearPath()">清除</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>📊 图分析</h3>
+      <div class="btn-group">
+        <button class="btn btn-warn btn-sm" onclick="toggleCritical()">关键节点/边</button>
+        <button class="btn btn-accent btn-sm" onclick="toggleComponents()">连通分量</button>
+        <button class="btn btn-sm" style="background:#607d8b;color:#fff" onclick="resetLayout()">重置视图</button>
+      </div>
+      <div class="info-line" style="margin-top:8px">节点数 <span id="info-nodes">—</span></div>
+      <div class="info-line">边数 <span id="info-edges">—</span></div>
+      <div class="info-line">连通分量 <span id="info-comp">—</span></div>
+      <div class="info-line">关键节点 <span id="info-crit-nodes">—</span></div>
+      <div class="info-line">关键边 <span id="info-crit-edges">—</span></div>
+    </div>
+
+    <div class="section">
+      <h3>📋 图例</h3>
+      <div class="legend">
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#4CAF50"></div> open 边
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#f44336"></div> closed 边
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#e94560"></div> 最短路径
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="border:2px solid #f0c040;background:transparent"></div> 关键节点
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#ff9800;border-radius:0;width:14px;height:3px"></div> 关键边
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>📝 结果</h3>
+      <div id="result-box">加载数据后，点击节点选择起终点<br>或从下拉菜单选择后点击"查询路径"<br><br>操作提示：<br>• 悬停节点查看详情<br>• 点击节点选择起/终点<br>•
+        滚轮缩放，拖拽平移地图</div>
     </div>
   </div>
 
-  <div class="section">
-    <h3>📊 图分析</h3>
-    <div class="btn-group">
-      <button class="btn btn-warn btn-sm" onclick="toggleCritical()">关键节点/边</button>
-      <button class="btn btn-accent btn-sm" onclick="toggleComponents()">连通分量</button>
-      <button class="btn btn-sm" style="background:#607d8b;color:#fff" onclick="resetLayout()">重新布局</button>
-    </div>
-    <div class="info-line" style="margin-top:8px">节点数 <span id="info-nodes">—</span></div>
-    <div class="info-line">边数 <span id="info-edges">—</span></div>
-    <div class="info-line">连通分量 <span id="info-comp">—</span></div>
-    <div class="info-line">关键节点 <span id="info-crit-nodes">—</span></div>
-    <div class="info-line">关键边 <span id="info-crit-edges">—</span></div>
+  <div id="canvas-wrap">
+    <canvas id="canvas"></canvas>
+    <div id="map-hint"><strong>地图交互</strong>鼠标滚轮缩放，按住拖拽平移，点击点位选起终点。</div>
+    <div id="tooltip"></div>
   </div>
 
-  <div class="section">
-    <h3>📋 图例</h3>
-    <div class="legend">
-      <div class="legend-item"><div class="legend-dot" style="background:#4CAF50"></div> open 边</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#f44336"></div> closed 边</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#e94560"></div> 最短路径</div>
-      <div class="legend-item"><div class="legend-dot" style="border:2px solid #f0c040;background:transparent"></div> 关键节点</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#ff9800;border-radius:0;width:14px;height:3px"></div> 关键边</div>
-    </div>
-  </div>
+  <script>
+    // ==================== 全局状态 ====================
+    let places = [], roads = [];
+    let placeMap = {}, adj = {};
+    let mapImage = new Image();
+    let mapReady = false;
+    let mapWorld = { width: 1160, height: 1920 };
+    let view = { scale: 1, offsetX: 0, offsetY: 0, minScale: 0.2, maxScale: 4 };
+    let state = {
+      fromId: null,
+      toId: null,
+      pathResult: null,
+      showCritical: false,
+      showComponents: false,
+      critical: null,
+      components: null,
+      hoverNode: null,
+      dragging: false,
+      dragStartX: 0,
+      dragStartY: 0,
+      dragOriginX: 0,
+      dragOriginY: 0
+    };
 
-  <div class="section">
-    <h3>📝 结果</h3>
-    <div id="result-box">加载数据后，点击节点选择起终点<br>或从下拉菜单选择后点击"查询路径"<br><br>操作提示：<br>• 悬停节点查看详情<br>• 点击节点选择起/终点<br>• 可拖拽节点调整位置</div>
-  </div>
-</div>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const tooltip = document.getElementById('tooltip');
 
-<div id="canvas-wrap">
-  <canvas id="canvas"></canvas>
-</div>
-
-<script>
-// ==================== 全局状态 ====================
-let places = [], roads = [];
-let placeMap = {}, adj = {};
-let state = {
-  fromId:null, toId:null, pathResult:null,
-  showCritical:false, showComponents:false,
-  critical:null, components:null,
-  hoverNode:null
-};
-
-const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d');
-let forceSim = null; // 力导向模拟状态
-
-// ==================== CSV 解析 ====================
-function parseCSV(text) {
-  const lines = text.split(/\r?\n/).filter(l => l.trim());
-  const result = [];
-  for (const line of lines) {
-    if (line.match(/^(place_id|from_id)/i)) continue; // skip header
-    const parts = line.split(',').map(s => s.trim());
-    result.push(parts);
-  }
-  return result;
-}
-
-// ==================== 加载数据 ====================
-function loadData(placesCSV, roadsCSV) {
-  const pRows = parseCSV(placesCSV);
-  const rRows = parseCSV(roadsCSV);
-
-  places = pRows.map(r => ({
-    id: r[0], name: r[1], cat: r[2], stay: parseInt(r[3])||0,
-    open: r[4]||'00:00', close: r[5]||'23:59',
-    x: Math.random()*600+100, y: Math.random()*400+100
-  }));
-
-  roads = rRows.map(r => ({
-    from: r[0], to: r[1],
-    dist: parseInt(r[2])||0, time: parseInt(r[3])||0,
-    status: r[4]||'open'
-  }));
-
-  // Build lookup
-  placeMap = {};
-  places.forEach(p => { placeMap[p.id] = p; });
-
-  // Build adjacency (only open edges for traversal)
-  adj = {};
-  places.forEach(p => { adj[p.id] = []; });
-  roads.forEach(r => {
-    adj[r.from].push({to:r.to, dist:r.dist, time:r.time, status:r.status});
-    adj[r.to].push({to:r.from, dist:r.dist, time:r.time, status:r.status});
-  });
-
-  // Stats
-  document.getElementById('info-nodes').textContent = places.length;
-  document.getElementById('info-edges').textContent = roads.length;
-
-  // Populate dropdowns
-  const sf = document.getElementById('sel-from');
-  const st = document.getElementById('sel-to');
-  sf.innerHTML = ''; st.innerHTML = '';
-  places.forEach(p => {
-    const o1 = document.createElement('option'); o1.value=p.id; o1.textContent=`${p.id} — ${p.name}`; sf.appendChild(o1);
-    const o2 = document.createElement('option'); o2.value=p.id; o2.textContent=`${p.id} — ${p.name}`; st.appendChild(o2);
-  });
-
-  // Run force layout
-  runForceLayout();
-
-  // Reset state
-  state.pathResult = null; state.fromId = null; state.toId = null;
-  state.showCritical = false; state.showComponents = false;
-  state.critical = null; state.components = null;
-  document.getElementById('result-box').textContent = '图数据加载完成。点击节点或从下拉菜单选择起终点查询最短路径。';
-  document.getElementById('info-crit-nodes').textContent = '—';
-  document.getElementById('info-crit-edges').textContent = '—';
-  document.getElementById('info-comp').textContent = '—';
-
-  resize();
-  draw();
-}
-
-// ==================== 力导向布局 ====================
-function runForceLayout() {
-  if (places.length === 0) return;
-  const W = canvas.width || 900, H = canvas.height || 650;
-  const cx = W/2, cy = H/2;
-
-  // Initialize positions in a circle
-  places.forEach((p, i) => {
-    const angle = (2*Math.PI*i/places.length) - Math.PI/2;
-    const r = Math.min(W, H) * 0.3;
-    p.x = cx + r * Math.cos(angle);
-    p.y = cy + r * Math.sin(angle);
-  });
-
-  // Build edge set for fast lookup
-  const edgeSet = new Set();
-  roads.forEach(r => { edgeSet.add(r.from+'|'+r.to); edgeSet.add(r.to+'|'+r.from); });
-
-  // Force simulation
-  const ITER = 500;
-  const repulsion = 50000;
-  const attraction = 0.01;
-  const damping = 0.9;
-
-  for (let iter = 0; iter < ITER; iter++) {
-    // Reset forces
-    const fx = {}, fy = {};
-    places.forEach(p => { fx[p.id] = 0; fy[p.id] = 0; });
-
-    // Repulsion between all pairs
-    for (let i = 0; i < places.length; i++) {
-      for (let j = i+1; j < places.length; j++) {
-        const a = places[i], b = places[j];
-        let dx = a.x - b.x, dy = a.y - b.y;
-        const dist = Math.sqrt(dx*dx+dy*dy) || 1;
-        const force = repulsion / (dist*dist);
-        const fx_val = (dx/dist) * force;
-        const fy_val = (dy/dist) * force;
-        fx[a.id] += fx_val; fy[a.id] += fy_val;
-        fx[b.id] -= fx_val; fy[b.id] -= fy_val;
+    mapImage.src = 'map.png';
+    mapImage.onload = () => {
+      mapReady = true;
+      mapWorld.width = mapImage.naturalWidth || mapWorld.width;
+      mapWorld.height = mapImage.naturalHeight || mapWorld.height;
+      if (places.length) {
+        assignPlacePositions();
+        fitToView();
       }
+      draw();
+    };
+
+    // ==================== CSV 解析 ====================
+    function parseCSV(text) {
+      return text.split(/\r?\n/)
+        .filter(line => line.trim())
+        .filter(line => !line.match(/^(place_id|from_id)/i))
+        .map(line => line.split(',').map(part => part.trim()));
     }
 
-    // Attraction along edges
-    for (const r of roads) {
-      const a = placeMap[r.from], b = placeMap[r.to];
-      let dx = b.x - a.x, dy = b.y - a.y;
-      const dist = Math.sqrt(dx*dx+dy*dy) || 1;
-      const force = dist * attraction;
-      const fx_val = (dx/dist) * force;
-      const fy_val = (dy/dist) * force;
-      fx[a.id] += fx_val; fy[a.id] += fy_val;
-      fx[b.id] -= fx_val; fy[b.id] -= fy_val;
-    }
-
-    // Center gravity
-    places.forEach(p => {
-      fx[p.id] += (cx - p.x) * 0.001;
-      fy[p.id] += (cy - p.y) * 0.001;
-    });
-
-    // Apply forces with damping
-    let maxMove = 0;
-    places.forEach(p => {
-      const mx = fx[p.id] * damping;
-      const my = fy[p.id] * damping;
-      p.x += mx; p.y += my;
-      p.x = Math.max(30, Math.min(W-30, p.x));
-      p.y = Math.max(30, Math.min(H-30, p.y));
-      maxMove = Math.max(maxMove, Math.abs(mx), Math.abs(my));
-    });
-
-    if (maxMove < 0.1) break;
-  }
-  draw();
-}
-
-// ==================== 图算法 ====================
-function dijkstra(fromId, toId, mode) {
-  const dist = {}, prev = {};
-  const unvisited = new Set(places.map(p=>p.id));
-  dist[fromId] = 0;
-  while (unvisited.size) {
-    let u = null, best = Infinity;
-    for (const id of unvisited) {
-      if (dist[id] !== undefined && dist[id] < best) { best = dist[id]; u = id; }
-    }
-    if (u === null || u === toId) break;
-    unvisited.delete(u);
-    for (const e of adj[u]) {
-      if (e.status !== 'open') continue;
-      const w = mode === 'DIST' ? e.dist : e.time;
-      const nd = dist[u] + w;
-      if (dist[e.to] === undefined || nd < dist[e.to]) {
-        dist[e.to] = nd; prev[e.to] = u;
+    function hashString(text) {
+      let hash = 0;
+      for (let i = 0; i < text.length; i++) {
+        hash = ((hash << 5) - hash + text.charCodeAt(i)) | 0;
       }
+      return Math.abs(hash);
     }
-  }
-  if (dist[toId] === undefined) return null;
-  const path = []; let cur = toId;
-  while (cur !== fromId) { path.push(cur); cur = prev[cur]; }
-  path.push(fromId); path.reverse();
-  return { cost:dist[toId], path };
-}
 
-function bfs(blockedNode, blockedEdgeKey) {
-  const visited = new Set(); let comps = 0;
-  for (const p of places) {
-    if (p.id === blockedNode || visited.has(p.id)) continue;
-    comps++;
-    const q = [p.id]; visited.add(p.id);
-    while (q.length) {
-      const u = q.shift();
-      for (const e of adj[u]) {
-        if (e.status !== 'open') continue;
-        if (e.to === blockedNode) continue;
-        const ek = u < e.to ? u+'|'+e.to : e.to+'|'+u;
-        if (ek === blockedEdgeKey) continue;
-        if (!visited.has(e.to)) { visited.add(e.to); q.push(e.to); }
+    function toWorld(nx, ny) {
+      return { x: nx * mapWorld.width, y: ny * mapWorld.height };
+    }
+
+    function addJitter(nx, ny, key, spreadX = 0.01, spreadY = 0.01) {
+      const hash = hashString(key);
+      const jitterX = (((hash % 2000) / 1000) - 1) * spreadX;
+      const jitterY = ((((Math.floor(hash / 2000)) % 2000) / 1000) - 1) * spreadY;
+      return toWorld(nx + jitterX, ny + jitterY);
+    }
+
+    const EXACT_POSITIONS = {
+      P0001: [0.82, 0.79], P0002: [0.78, 0.40], P0003: [0.79, 0.56], P0004: [0.84, 0.67],
+      P0005: [0.58, 0.22], P0006: [0.49, 0.22], P0007: [0.72, 0.39], P0008: [0.55, 0.34],
+      P0009: [0.52, 0.28], P0010: [0.30, 0.32], P0011: [0.28, 0.25], P0012: [0.51, 0.26],
+      P0013: [0.47, 0.31], P0014: [0.38, 0.53], P0015: [0.44, 0.35], P0016: [0.43, 0.29],
+      P0017: [0.46, 0.22], P0018: [0.57, 0.23], P0019: [0.63, 0.24], P0020: [0.86, 0.59],
+      P0021: [0.73, 0.31], P0022: [0.69, 0.29], P0023: [0.63, 0.29], P0024: [0.38, 0.47],
+      P0025: [0.38, 0.53], P0026: [0.23, 0.76], P0027: [0.52, 0.69], P0028: [0.46, 0.71],
+      P0029: [0.47, 0.80], P0030: [0.45, 0.84], P0031: [0.44, 0.88], P0032: [0.49, 0.74],
+      P0033: [0.42, 0.73], P0034: [0.44, 0.66], P0035: [0.35, 0.78], P0036: [0.37, 0.80],
+      P0037: [0.49, 0.60], P0038: [0.52, 0.58], P0039: [0.47, 0.62], P0040: [0.41, 0.55],
+      P0041: [0.38, 0.54], P0042: [0.36, 0.48], P0043: [0.56, 0.63], P0044: [0.61, 0.66],
+      P0045: [0.18, 0.62], P0046: [0.78, 0.83], P0047: [0.20, 0.58], P0048: [0.40, 0.70],
+      P0049: [0.49, 0.67], P0050: [0.50, 0.66], P0051: [0.60, 0.60], P0052: [0.53, 0.73],
+      P0053: [0.44, 0.69], P0054: [0.47, 0.70], P0055: [0.49, 0.73], P0056: [0.52, 0.69],
+      P0057: [0.57, 0.71], P0058: [0.68, 0.78], P0059: [0.71, 0.80], P0060: [0.75, 0.58],
+      P0061: [0.73, 0.67], P0062: [0.75, 0.69], P0063: [0.80, 0.71], P0064: [0.81, 0.74],
+      P0065: [0.23, 0.88], P0066: [0.27, 0.86], P0067: [0.30, 0.84], P0068: [0.34, 0.82],
+      P0069: [0.38, 0.88], P0070: [0.32, 0.92], P0071: [0.36, 0.94], P0072: [0.40, 0.91],
+      P0073: [0.44, 0.90], P0074: [0.48, 0.89], P0075: [0.52, 0.88], P0076: [0.56, 0.86],
+      P0077: [0.60, 0.85], P0078: [0.64, 0.83], P0079: [0.68, 0.82], P0080: [0.29, 0.95],
+      P0081: [0.33, 0.97], P0082: [0.38, 0.98], P0083: [0.87, 0.52], P0084: [0.50, 0.08],
+      P0085: [0.08, 0.34], P0086: [0.12, 0.83], P0087: [0.88, 0.52]
+    };
+
+    function clusterPosition(place) {
+      const lower = place.name.toLowerCase();
+      const hash = hashString(place.id + '|' + place.name);
+
+      if (/dormitory/i.test(place.name)) {
+        const dormNumber = Number(place.name.match(/\d+/)?.[0] || 0);
+        const row = Math.floor((dormNumber - 2) / 4);
+        const col = (dormNumber - 2) % 4;
+        return addJitter(0.26 + col * 0.035, 0.84 + row * 0.03, place.name, 0.004, 0.004);
       }
-    }
-  }
-  return comps;
-}
 
-function findCritical() {
-  const baseline = bfs(null, null);
-  const critNodes = [], critEdges = [];
-  for (const p of places) {
-    if (bfs(p.id, null) > baseline) critNodes.push(p.id);
-  }
-  const seen = new Set();
-  for (const r of roads) {
-    if (r.status !== 'open') continue;
-    const ek = r.from < r.to ? r.from+'|'+r.to : r.to+'|'+r.from;
-    if (seen.has(ek)) continue; seen.add(ek);
-    if (bfs(null, ek) > baseline) critEdges.push(r.from < r.to ? [r.from, r.to] : [r.to, r.from]);
-  }
-  return { nodes:critNodes.sort(), edges:critEdges };
-}
-
-function findComponents() {
-  const visited = new Set();
-  const comps = [];
-  for (const p of places) {
-    if (visited.has(p.id)) continue;
-    const comp = [];
-    const q = [p.id]; visited.add(p.id);
-    while (q.length) {
-      const u = q.shift(); comp.push(u);
-      for (const e of adj[u]) {
-        if (e.status !== 'open') continue;
-        if (!visited.has(e.to)) { visited.add(e.to); q.push(e.to); }
+      if (lower.includes('canteen')) {
+        if (lower.includes('hexi')) return addJitter(0.20, 0.58, place.name, 0.01, 0.01);
+        if (lower.includes('hedong')) return addJitter(0.79, 0.56, place.name, 0.01, 0.01);
+        if (lower.includes('riva')) return addJitter(0.35, 0.79, place.name, 0.01, 0.01);
+        return addJitter(0.50, 0.62, place.name, 0.01, 0.01);
       }
+
+      if (lower.includes('gate') || lower.includes('zhongshan') || lower.includes('zaoyang') || lower.includes('xianfeng')) {
+        return addJitter(0.85 - ((hash % 3) * 0.05), 0.50 + (((hash >> 2) % 3) * 0.05), place.name, 0.01, 0.01);
+      }
+
+      if (lower.includes('stadium') || lower.includes('gymnasium') || lower.includes('sports')) {
+        return addJitter(0.79, 0.80, place.name, 0.015, 0.015);
+      }
+
+      if (lower.includes('library') || lower.includes('archives') || lower.includes('office') || lower.includes('press') || lower.includes('publishing') || lower.includes('graduate')) {
+        return addJitter(0.60, 0.24 + ((hash % 4) * 0.02), place.name, 0.01, 0.01);
+      }
+
+      if (lower.includes('science') || lower.includes('physics') || lower.includes('chemistry') || lower.includes('mathematics') || lower.includes('computer') || lower.includes('electron') || lower.includes('hydraulic') || lower.includes('microwave') || lower.includes('pavlov') || lower.includes('wildlife') || lower.includes('primate') || lower.includes('temperature') || lower.includes('laboratory')) {
+        return addJitter(0.50 + ((hash % 5) - 2) * 0.03, 0.63 + (((hash >> 3) % 5) - 2) * 0.03, place.name, 0.01, 0.01);
+      }
+
+      if (lower.includes('international') || lower.includes('fashion') || lower.includes('design') || lower.includes('experimental') || lower.includes('teaching_building') || lower.includes('school')) {
+        return addJitter(0.77 + ((hash % 3) * 0.02), 0.70 + (((hash >> 2) % 4) * 0.02), place.name, 0.012, 0.012);
+      }
+
+      if (lower.includes('student') || lower.includes('auditorium') || lower.includes('alumni') || lower.includes('union') || lower.includes('veteran') || lower.includes('activity')) {
+        return addJitter(0.40 + ((hash % 5) - 2) * 0.03, 0.30 + (((hash >> 2) % 4) * 0.03), place.name, 0.012, 0.012);
+      }
+
+      if (lower.includes('hospital') || lower.includes('medical')) {
+        return addJitter(0.83, 0.58, place.name, 0.01, 0.01);
+      }
+
+      if (lower.includes('pool') || lower.includes('swimming')) {
+        return addJitter(0.38, 0.53, place.name, 0.01, 0.01);
+      }
+
+      const fallbackSlots = [[0.48, 0.49], [0.54, 0.52], [0.42, 0.57], [0.58, 0.60], [0.44, 0.69], [0.53, 0.71], [0.34, 0.78], [0.64, 0.79]];
+      const slot = fallbackSlots[hash % fallbackSlots.length];
+      return addJitter(slot[0], slot[1], place.name, 0.012, 0.012);
     }
-    comps.push(comp);
-  }
-  return comps;
-}
 
-// ==================== 渲染 ====================
-function resize() {
-  const wrap = document.getElementById('canvas-wrap');
-  canvas.width = Math.max(600, wrap.clientWidth);
-  canvas.height = Math.max(400, wrap.clientHeight);
-  draw();
-}
-window.addEventListener('resize', resize);
-
-function nodeAt(mx, my) {
-  for (const p of places) {
-    const dx=mx-p.x, dy=my-p.y;
-    if (dx*dx+dy*dy < 400) return p;
-  }
-  return null;
-}
-
-function draw() {
-  const W=canvas.width, H=canvas.height;
-  ctx.clearRect(0, 0, W, H);
-
-  if (places.length === 0) {
-    ctx.fillStyle = '#666'; ctx.font = '20px "Microsoft YaHei"'; ctx.textAlign = 'center';
-    ctx.fillText('请加载 places.csv 和 roads.csv 文件', W/2, H/2);
-    return;
-  }
-
-  // Background grid
-  ctx.strokeStyle = '#1a1a3e'; ctx.lineWidth = 1;
-  for (let x=50; x<W; x+=50) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
-  for (let y=50; y<H; y+=50) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
-
-  // Build sets for fast lookup
-  const pathEdgeSet = new Set();
-  const pathNodeSet = new Set();
-  if (state.pathResult) {
-    state.pathResult.path.forEach(id => pathNodeSet.add(id));
-    for (let i=0; i+1<state.pathResult.path.length; i++) {
-      const a=state.pathResult.path[i], b=state.pathResult.path[i+1];
-      pathEdgeSet.add(a+'|'+b); pathEdgeSet.add(b+'|'+a);
-    }
-  }
-
-  const critEdgeSet = new Set();
-  if (state.showCritical && state.critical) {
-    state.critical.edges.forEach(([a,b]) => { critEdgeSet.add(a+'|'+b); critEdgeSet.add(b+'|'+a); });
-  }
-
-  // Draw non-path edges
-  const drawn = new Set();
-  for (const r of roads) {
-    const key = r.from < r.to ? r.from+'|'+r.to : r.to+'|'+r.from;
-    if (drawn.has(key)) continue; drawn.add(key);
-    if (pathEdgeSet.has(r.from+'|'+r.to)) continue;
-    const a=placeMap[r.from], b=placeMap[r.to];
-    if (!a || !b) continue;
-    ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y);
-    if (critEdgeSet.has(r.from+'|'+r.to)) {
-      ctx.strokeStyle = '#ff9800'; ctx.lineWidth = 3;
-    } else if (r.status === 'closed') {
-      ctx.strokeStyle = '#f44336'; ctx.lineWidth = 1.5; ctx.setLineDash([6,4]);
-    } else {
-      ctx.strokeStyle = '#2a5a3e'; ctx.lineWidth = 1.5; ctx.setLineDash([]);
-    }
-    ctx.stroke(); ctx.setLineDash([]);
-  }
-
-  // Draw path edges on top
-  drawn.clear();
-  for (const r of roads) {
-    const key = r.from < r.to ? r.from+'|'+r.to : r.to+'|'+r.from;
-    if (!pathEdgeSet.has(r.from+'|'+r.to) || drawn.has(key)) continue;
-    drawn.add(key);
-    const a=placeMap[r.from], b=placeMap[r.to];
-    if (!a || !b) continue;
-    ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y);
-    ctx.strokeStyle = '#e94560'; ctx.lineWidth = 4;
-    ctx.shadowColor = '#e94560'; ctx.shadowBlur = 10; ctx.stroke(); ctx.shadowBlur = 0;
-
-    // Edge label
-    const mode = document.getElementById('sel-mode').value;
-    ctx.fillStyle = '#f0c040'; ctx.font = 'bold 10px monospace'; ctx.textAlign = 'center';
-    const mx=(a.x+b.x)/2, my=(a.y+b.y)/2;
-    const offX = -(b.y-a.y)*0.08, offY = (b.x-a.x)*0.08;
-    ctx.fillText(mode==='DIST'?r.dist+'m':r.time+'min', mx+offX, my+offY);
-  }
-
-  // Draw components shading
-  if (state.showComponents && state.components) {
-    const colors = ['rgba(233,69,96,0.06)','rgba(33,150,243,0.06)','rgba(76,175,80,0.06)','rgba(240,192,64,0.06)','rgba(156,39,176,0.06)'];
-    state.components.forEach((comp, i) => {
-      ctx.fillStyle = colors[i%colors.length];
-      comp.forEach(id => {
-        const p = placeMap[id]; if(!p) return;
-        ctx.beginPath(); ctx.arc(p.x, p.y, 40, 0, Math.PI*2); ctx.fill();
+    function assignPlacePositions() {
+      places.forEach(place => {
+        const exact = EXACT_POSITIONS[place.id];
+        const pos = exact ? toWorld(exact[0], exact[1]) : clusterPosition(place);
+        place.x = pos.x;
+        place.y = pos.y;
       });
+    }
+
+    // ==================== 加载数据 ====================
+    function loadData(placesCSV, roadsCSV) {
+      const pRows = parseCSV(placesCSV);
+      const rRows = parseCSV(roadsCSV);
+
+      places = pRows.map(r => ({
+        id: r[0],
+        name: r[1],
+        cat: r[2],
+        stay: parseInt(r[3], 10) || 0,
+        open: r[4] || '00:00',
+        close: r[5] || '23:59',
+        x: 0,
+        y: 0
+      }));
+
+      roads = rRows.map(r => ({
+        from: r[0],
+        to: r[1],
+        dist: parseInt(r[2], 10) || 0,
+        time: parseInt(r[3], 10) || 0,
+        status: r[4] || 'open'
+      }));
+
+      placeMap = {};
+      places.forEach(place => { placeMap[place.id] = place; });
+
+      adj = {};
+      places.forEach(place => { adj[place.id] = []; });
+      roads.forEach(road => {
+        if (!adj[road.from]) adj[road.from] = [];
+        if (!adj[road.to]) adj[road.to] = [];
+        adj[road.from].push({ to: road.to, dist: road.dist, time: road.time, status: road.status });
+        adj[road.to].push({ to: road.from, dist: road.dist, time: road.time, status: road.status });
+      });
+
+      document.getElementById('info-nodes').textContent = places.length;
+      document.getElementById('info-edges').textContent = roads.length;
+
+      const sf = document.getElementById('sel-from');
+      const st = document.getElementById('sel-to');
+      sf.innerHTML = '';
+      st.innerHTML = '';
+      places.forEach(place => {
+        const readable = place.name.replace(/_/g, ' ');
+        const a = document.createElement('option');
+        a.value = place.id;
+        a.textContent = `${place.id} — ${readable}`;
+        sf.appendChild(a);
+        const b = document.createElement('option');
+        b.value = place.id;
+        b.textContent = `${place.id} — ${readable}`;
+        st.appendChild(b);
+      });
+
+      assignPlacePositions();
+      fitToView();
+
+      state.pathResult = null;
+      state.fromId = null;
+      state.toId = null;
+      state.showCritical = false;
+      state.showComponents = false;
+      state.critical = null;
+      state.components = null;
+      state.hoverNode = null;
+
+      document.getElementById('result-box').textContent = '图数据加载完成。滚轮缩放、拖拽平移、点击节点选择起终点。';
+      document.getElementById('info-crit-nodes').textContent = '—';
+      document.getElementById('info-crit-edges').textContent = '—';
+      document.getElementById('info-comp').textContent = '—';
+
+      draw();
+    }
+
+    // ==================== 图算法 ====================
+    function dijkstra(fromId, toId, mode) {
+      const dist = {}, prev = {};
+      const unvisited = new Set(places.map(p => p.id));
+      dist[fromId] = 0;
+      while (unvisited.size) {
+        let u = null, best = Infinity;
+        for (const id of unvisited) {
+          if (dist[id] !== undefined && dist[id] < best) { best = dist[id]; u = id; }
+        }
+        if (u === null || u === toId) break;
+        unvisited.delete(u);
+        for (const e of adj[u]) {
+          if (e.status !== 'open') continue;
+          const w = mode === 'DIST' ? e.dist : e.time;
+          const nd = dist[u] + w;
+          if (dist[e.to] === undefined || nd < dist[e.to]) {
+            dist[e.to] = nd; prev[e.to] = u;
+          }
+        }
+      }
+      if (dist[toId] === undefined) return null;
+      const path = []; let cur = toId;
+      while (cur !== fromId) { path.push(cur); cur = prev[cur]; }
+      path.push(fromId); path.reverse();
+      return { cost: dist[toId], path };
+    }
+
+    function bfs(blockedNode, blockedEdgeKey) {
+      const visited = new Set(); let comps = 0;
+      for (const p of places) {
+        if (p.id === blockedNode || visited.has(p.id)) continue;
+        comps++;
+        const q = [p.id]; visited.add(p.id);
+        while (q.length) {
+          const u = q.shift();
+          for (const e of adj[u]) {
+            if (e.status !== 'open') continue;
+            if (e.to === blockedNode) continue;
+            const ek = u < e.to ? u + '|' + e.to : e.to + '|' + u;
+            if (ek === blockedEdgeKey) continue;
+            if (!visited.has(e.to)) { visited.add(e.to); q.push(e.to); }
+          }
+        }
+      }
+      return comps;
+    }
+
+    function findCritical() {
+      const baseline = bfs(null, null);
+      const critNodes = [], critEdges = [];
+      for (const p of places) {
+        if (bfs(p.id, null) > baseline) critNodes.push(p.id);
+      }
+      const seen = new Set();
+      for (const r of roads) {
+        if (r.status !== 'open') continue;
+        const ek = r.from < r.to ? r.from + '|' + r.to : r.to + '|' + r.from;
+        if (seen.has(ek)) continue; seen.add(ek);
+        if (bfs(null, ek) > baseline) critEdges.push(r.from < r.to ? [r.from, r.to] : [r.to, r.from]);
+      }
+      return { nodes: critNodes.sort(), edges: critEdges };
+    }
+
+    function findComponents() {
+      const visited = new Set();
+      const comps = [];
+      for (const p of places) {
+        if (visited.has(p.id)) continue;
+        const comp = [];
+        const q = [p.id]; visited.add(p.id);
+        while (q.length) {
+          const u = q.shift(); comp.push(u);
+          for (const e of adj[u]) {
+            if (e.status !== 'open') continue;
+            if (!visited.has(e.to)) { visited.add(e.to); q.push(e.to); }
+          }
+        }
+        comps.push(comp);
+      }
+      return comps;
+    }
+
+    // ==================== 渲染 ====================
+    function resize() {
+      const wrap = document.getElementById('canvas-wrap');
+      const ratio = window.devicePixelRatio || 1;
+      const width = Math.max(600, wrap.clientWidth);
+      const height = Math.max(400, wrap.clientHeight);
+      canvas.width = Math.floor(width * ratio);
+      canvas.height = Math.floor(height * ratio);
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
+      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+      fitToView();
+      draw();
+    }
+    window.addEventListener('resize', resize);
+
+    function fitToView() {
+      const width = canvas.clientWidth || document.getElementById('canvas-wrap').clientWidth;
+      const height = canvas.clientHeight || document.getElementById('canvas-wrap').clientHeight;
+      const scale = Math.min((width - 32) / mapWorld.width, (height - 32) / mapWorld.height);
+      view.scale = Math.max(view.minScale, Math.min(view.maxScale, scale));
+      view.offsetX = (width - mapWorld.width * view.scale) / 2;
+      view.offsetY = (height - mapWorld.height * view.scale) / 2;
+    }
+
+    function screenToWorld(clientX, clientY) {
+      const rect = canvas.getBoundingClientRect();
+      return {
+        x: (clientX - rect.left - view.offsetX) / view.scale,
+        y: (clientY - rect.top - view.offsetY) / view.scale
+      };
+    }
+
+    function worldToScreen(wx, wy) {
+      return { x: wx * view.scale + view.offsetX, y: wy * view.scale + view.offsetY };
+    }
+
+    function nodeAt(clientX, clientY) {
+      const world = screenToWorld(clientX, clientY);
+      const hitRadius = Math.max(12, 16 / view.scale);
+      const hitRadiusSq = hitRadius * hitRadius;
+      for (let i = places.length - 1; i >= 0; i--) {
+        const place = places[i];
+        const dx = world.x - place.x;
+        const dy = world.y - place.y;
+        if (dx * dx + dy * dy <= hitRadiusSq) return place;
+      }
+      return null;
+    }
+
+    function draw() {
+      const width = canvas.clientWidth || canvas.width;
+      const height = canvas.clientHeight || canvas.height;
+      ctx.clearRect(0, 0, width, height);
+
+      if (!places.length) {
+        ctx.fillStyle = '#64748b';
+        ctx.font = '20px Microsoft YaHei';
+        ctx.textAlign = 'center';
+        ctx.fillText('请加载 places.csv 和 roads.csv 文件', width / 2, height / 2);
+        return;
+      }
+
+      ctx.save();
+      ctx.setTransform(view.scale, 0, 0, view.scale, view.offsetX, view.offsetY);
+
+      if (mapReady) {
+        ctx.drawImage(mapImage, 0, 0, mapWorld.width, mapWorld.height);
+      } else {
+        ctx.fillStyle = '#eef1f6';
+        ctx.fillRect(0, 0, mapWorld.width, mapWorld.height);
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '18px Microsoft YaHei';
+        ctx.textAlign = 'center';
+        ctx.fillText('地图加载中…', mapWorld.width / 2, mapWorld.height / 2);
+      }
+
+      const pathEdgeSet = new Set();
+      const pathNodeSet = new Set();
+      if (state.pathResult) {
+        state.pathResult.path.forEach(id => pathNodeSet.add(id));
+        for (let i = 0; i + 1 < state.pathResult.path.length; i++) {
+          const a = state.pathResult.path[i];
+          const b = state.pathResult.path[i + 1];
+          pathEdgeSet.add(`${a}|${b}`);
+          pathEdgeSet.add(`${b}|${a}`);
+        }
+      }
+
+      const critEdgeSet = new Set();
+      if (state.showCritical && state.critical) {
+        state.critical.edges.forEach(([a, b]) => {
+          critEdgeSet.add(`${a}|${b}`);
+          critEdgeSet.add(`${b}|${a}`);
+        });
+      }
+
+      const drawnEdges = new Set();
+      for (const road of roads) {
+        const edgeKey = road.from < road.to ? `${road.from}|${road.to}` : `${road.to}|${road.from}`;
+        if (drawnEdges.has(edgeKey)) continue;
+        drawnEdges.add(edgeKey);
+        if (pathEdgeSet.has(`${road.from}|${road.to}`) || pathEdgeSet.has(`${road.to}|${road.from}`)) continue;
+        const from = placeMap[road.from];
+        const to = placeMap[road.to];
+        if (!from || !to) continue;
+        ctx.beginPath();
+        ctx.moveTo(from.x, from.y);
+        ctx.lineTo(to.x, to.y);
+        if (critEdgeSet.has(`${road.from}|${road.to}`) || critEdgeSet.has(`${road.to}|${road.from}`)) {
+          ctx.strokeStyle = '#f59e0b';
+          ctx.lineWidth = Math.max(2, 2 / view.scale);
+        } else if (road.status === 'closed') {
+          ctx.strokeStyle = '#ef4444';
+          ctx.lineWidth = Math.max(1.5, 1.5 / view.scale);
+          ctx.setLineDash([8 / view.scale, 5 / view.scale]);
+        } else {
+          ctx.strokeStyle = 'rgba(34,197,94,.55)';
+          ctx.lineWidth = Math.max(1.5, 1.5 / view.scale);
+          ctx.setLineDash([]);
+        }
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      drawnEdges.clear();
+      for (const road of roads) {
+        const edgeKey = road.from < road.to ? `${road.from}|${road.to}` : `${road.to}|${road.from}`;
+        if (drawnEdges.has(edgeKey)) continue;
+        if (!pathEdgeSet.has(`${road.from}|${road.to}`) && !pathEdgeSet.has(`${road.to}|${road.from}`)) continue;
+        drawnEdges.add(edgeKey);
+        const from = placeMap[road.from];
+        const to = placeMap[road.to];
+        if (!from || !to) continue;
+        ctx.beginPath();
+        ctx.moveTo(from.x, from.y);
+        ctx.lineTo(to.x, to.y);
+        ctx.strokeStyle = '#e11d48';
+        ctx.lineWidth = Math.max(3, 4 / view.scale);
+        ctx.shadowColor = '#e11d48';
+        ctx.shadowBlur = 12 / view.scale;
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+        const mode = document.getElementById('sel-mode').value;
+        const label = mode === 'DIST' ? `${road.dist}m` : `${road.time}min`;
+        const midX = (from.x + to.x) / 2;
+        const midY = (from.y + to.y) / 2;
+        const offsetX = -(to.y - from.y) * 0.04;
+        const offsetY = (to.x - from.x) * 0.04;
+        ctx.fillStyle = '#b45309';
+        ctx.font = `${Math.max(11, 12 / view.scale)}px monospace`;
+        ctx.textAlign = 'center';
+        ctx.fillText(label, midX + offsetX, midY + offsetY);
+      }
+
+      if (state.showComponents && state.components) {
+        const colors = ['rgba(59,130,246,.08)', 'rgba(16,185,129,.08)', 'rgba(244,114,182,.08)', 'rgba(245,158,11,.08)', 'rgba(139,92,246,.08)'];
+        state.components.forEach((component, index) => {
+          ctx.fillStyle = colors[index % colors.length];
+          component.forEach(id => {
+            const place = placeMap[id];
+            if (!place) return;
+            ctx.beginPath();
+            ctx.arc(place.x, place.y, 26 / view.scale, 0, Math.PI * 2);
+            ctx.fill();
+          });
+        });
+      }
+
+      const categoryColors = {
+        Sports_and_Entertainment: '#e11d48',
+        Teaching_Research_and_Administration: '#2563eb',
+        Dining_room: '#f97316',
+        dormitory: '#22c55e',
+        Medical: '#db2777',
+        other: '#64748b'
+      };
+
+      for (const place of places) {
+        const isPath = pathNodeSet.has(place.id);
+        const isCritical = state.showCritical && state.critical && state.critical.nodes.includes(place.id);
+        const isSelected = place.id === state.fromId || place.id === state.toId;
+        const isHover = place.id === state.hoverNode;
+        const radius = isHover ? 16 / view.scale : 12 / view.scale;
+        const readableName = place.name.replace(/_/g, ' ');
+
+        if (isPath || isSelected) {
+          ctx.beginPath();
+          ctx.arc(place.x, place.y, radius + 6 / view.scale, 0, Math.PI * 2);
+          ctx.fillStyle = isSelected ? 'rgba(225,29,72,.22)' : 'rgba(225,29,72,.12)';
+          ctx.fill();
+        }
+
+        if (isCritical) {
+          ctx.beginPath();
+          ctx.arc(place.x, place.y, radius + 5 / view.scale, 0, Math.PI * 2);
+          ctx.strokeStyle = '#f59e0b';
+          ctx.lineWidth = Math.max(2, 2 / view.scale);
+          ctx.setLineDash([6 / view.scale, 4 / view.scale]);
+          ctx.stroke();
+          ctx.setLineDash([]);
+        }
+
+        ctx.beginPath();
+        ctx.arc(place.x, place.y, radius, 0, Math.PI * 2);
+        ctx.fillStyle = categoryColors[place.cat] || '#334155';
+        ctx.fill();
+        ctx.strokeStyle = isSelected ? '#ffffff' : '#0f172a';
+        ctx.lineWidth = Math.max(1.5, (isSelected ? 2.6 : 1.6) / view.scale);
+        ctx.stroke();
+
+        ctx.fillStyle = '#fff';
+        ctx.font = `${Math.max(11, 12 / view.scale)}px Microsoft YaHei`;
+        ctx.textAlign = 'center';
+        const shortLabel = readableName.length > 16 ? `${readableName.slice(0, 15)}…` : readableName;
+        ctx.fillText(shortLabel, place.x, place.y - radius - 4 / view.scale);
+        ctx.fillStyle = '#334155';
+        ctx.font = `${Math.max(9, 10 / view.scale)}px monospace`;
+        ctx.fillText(place.id, place.x, place.y + 4 / view.scale);
+      }
+
+      ctx.restore();
+      updateTooltip();
+    }
+
+    function updateTooltip() {
+      const place = state.hoverNode ? placeMap[state.hoverNode] : null;
+      if (!place) {
+        tooltip.style.display = 'none';
+        return;
+      }
+      const screen = worldToScreen(place.x, place.y);
+      tooltip.style.display = 'block';
+      tooltip.style.left = `${screen.x + 12}px`;
+      tooltip.style.top = `${screen.y - 10}px`;
+      tooltip.innerHTML = `<strong>${place.name.replace(/_/g, ' ')}</strong>${place.id}<br>类别：${place.cat}<br>停留：${place.stay} 分钟`;
+    }
+
+    // ==================== 交互 ====================
+    canvas.addEventListener('mousedown', e => {
+      state.dragging = true;
+      state.dragStartX = e.clientX;
+      state.dragStartY = e.clientY;
+      state.dragOriginX = view.offsetX;
+      state.dragOriginY = view.offsetY;
+      canvas.style.cursor = 'grabbing';
     });
-  }
 
-  // Draw nodes
-  const catColors = {'Sports_and_Entertainment':'#e94560','Teaching_Research_and_Administration':'#2196F3','Dining_room':'#ff9800',dormitory:'#4CAF50',Medical:'#e91e63',other:'#607d8b'};
-  for (const p of places) {
-    const isPath = pathNodeSet.has(p.id);
-    const isCritical = state.showCritical && state.critical && state.critical.nodes.includes(p.id);
-    const isSelected = p.id===state.fromId || p.id===state.toId;
-    const isHover = p.id===state.hoverNode;
-    const r = isHover ? 20 : 16;
+    window.addEventListener('mousemove', e => {
+      if (state.dragging) {
+        view.offsetX = state.dragOriginX + (e.clientX - state.dragStartX);
+        view.offsetY = state.dragOriginY + (e.clientY - state.dragStartY);
+        draw();
+        return;
+      }
+      const node = nodeAt(e.clientX, e.clientY);
+      const previous = state.hoverNode;
+      state.hoverNode = node ? node.id : null;
+      canvas.style.cursor = node ? 'pointer' : 'grab';
+      if (previous !== state.hoverNode) draw();
+    });
 
-    // Glow for path/selected
-    if (isPath || isSelected) {
-      ctx.beginPath(); ctx.arc(p.x, p.y, r+6, 0, Math.PI*2);
-      ctx.fillStyle = isSelected ? 'rgba(233,69,96,0.25)' : 'rgba(233,69,96,0.1)';
-      ctx.fill();
+    window.addEventListener('mouseup', e => {
+      if (!state.dragging) return;
+      state.dragging = false;
+      canvas.style.cursor = 'grab';
+      const moved = Math.abs(e.clientX - state.dragStartX) + Math.abs(e.clientY - state.dragStartY);
+      if (moved < 4) {
+        const node = nodeAt(e.clientX, e.clientY);
+        if (!node) return;
+        if (!state.fromId || (state.fromId && state.toId)) {
+          state.fromId = node.id;
+          state.toId = null;
+          state.pathResult = null;
+        } else {
+          state.toId = node.id;
+          document.getElementById('sel-from').value = state.fromId;
+          document.getElementById('sel-to').value = state.toId;
+          findPath();
+          return;
+        }
+        document.getElementById('sel-from').value = state.fromId;
+        document.getElementById('sel-to').value = '';
+        draw();
+      }
+    });
+
+    canvas.addEventListener('mouseleave', () => {
+      if (state.dragging) return;
+      state.hoverNode = null;
+      tooltip.style.display = 'none';
+      canvas.style.cursor = 'grab';
+      draw();
+    });
+
+    canvas.addEventListener('wheel', e => {
+      e.preventDefault();
+      const rect = canvas.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+      const before = { x: (mouseX - view.offsetX) / view.scale, y: (mouseY - view.offsetY) / view.scale };
+      const zoomFactor = Math.exp(-e.deltaY * 0.0012);
+      const nextScale = Math.max(view.minScale, Math.min(view.maxScale, view.scale * zoomFactor));
+      view.offsetX = mouseX - before.x * nextScale;
+      view.offsetY = mouseY - before.y * nextScale;
+      view.scale = nextScale;
+      draw();
+    }, { passive: false });
+
+    canvas.addEventListener('dblclick', e => {
+      const rect = canvas.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+      const before = { x: (mouseX - view.offsetX) / view.scale, y: (mouseY - view.offsetY) / view.scale };
+      const nextScale = Math.max(view.minScale, Math.min(view.maxScale, view.scale * 1.3));
+      view.offsetX = mouseX - before.x * nextScale;
+      view.offsetY = mouseY - before.y * nextScale;
+      view.scale = nextScale;
+      draw();
+    });
+
+    // ==================== 按钮操作 ====================
+    function findPath() {
+      const fromId = document.getElementById('sel-from').value;
+      const toId = document.getElementById('sel-to').value;
+      const mode = document.getElementById('sel-mode').value;
+      if (!fromId || !toId || places.length === 0) return;
+      state.fromId = fromId;
+      state.toId = toId;
+      state.pathResult = dijkstra(fromId, toId, mode);
+      const box = document.getElementById('result-box');
+      if (!state.pathResult) {
+        box.textContent = `NO_PATH — ${fromId} 到 ${toId} 不可达`;
+      } else {
+        const costLabel = mode === 'DIST' ? 'm' : 'min';
+        let text = `PATH ${mode} ${state.pathResult.cost} ${costLabel}\nNODES ${state.pathResult.path.join(' → ')}\n`;
+        for (let i = 0; i + 1 < state.pathResult.path.length; i++) {
+          const a = state.pathResult.path[i];
+          const b = state.pathResult.path[i + 1];
+          const road = roads.find(item => (item.from === a && item.to === b) || (item.from === b && item.to === a));
+          if (road) text += `  ${a}→${b}: ${road.dist}m / ${road.time}min [${road.status}]\n`;
+        }
+        box.textContent = text;
+      }
+      draw();
     }
-    // Critical ring
-    if (isCritical) {
-      ctx.beginPath(); ctx.arc(p.x, p.y, r+5, 0, Math.PI*2);
-      ctx.strokeStyle = '#f0c040'; ctx.lineWidth = 3; ctx.setLineDash([5,3]); ctx.stroke(); ctx.setLineDash([]);
+
+    function clearPath() {
+      state.pathResult = null;
+      state.fromId = null;
+      state.toId = null;
+      document.getElementById('sel-from').value = '';
+      document.getElementById('sel-to').value = '';
+      document.getElementById('result-box').textContent = '路径已清除。';
+      draw();
     }
-    // Node body
-    ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI*2);
-    ctx.fillStyle = catColors[p.cat] || '#888'; ctx.fill();
-    ctx.strokeStyle = isSelected?'#fff':'#1a1a2e'; ctx.lineWidth = isSelected?3:2; ctx.stroke();
-    // Label
-    ctx.fillStyle = '#fff'; ctx.font = (isSelected?'bold ':'')+'11px "Microsoft YaHei"'; ctx.textAlign = 'center';
-    const label = p.name.length > 8 ? p.name.slice(0,7)+'…' : p.name;
-    ctx.fillText(label, p.x, p.y - r - 6);
-    ctx.fillStyle = '#aaa'; ctx.font = '9px monospace';
-    ctx.fillText(p.id, p.x, p.y + 3);
-  }
-}
 
-// ==================== 交互 ====================
-canvas.addEventListener('mousemove', e => {
-  const rect = canvas.getBoundingClientRect();
-  const mx = e.clientX - rect.left, my = e.clientY - rect.top;
-  if (state.dragNode) {
-    state.dragNode.x = Math.max(30, Math.min(canvas.width-30, mx - state.dragOffX));
-    state.dragNode.y = Math.max(30, Math.min(canvas.height-30, my - state.dragOffY));
-    draw(); return;
-  }
-  const node = nodeAt(mx, my);
-  const prev = state.hoverNode;
-  state.hoverNode = node ? node.id : null;
-  if (prev !== state.hoverNode) {
-    canvas.style.cursor = node ? 'pointer' : 'default';
-    draw();
-  }
-});
-canvas.addEventListener('mousedown', e => {
-  const rect = canvas.getBoundingClientRect();
-  const node = nodeAt(e.clientX - rect.left, e.clientY - rect.top);
-  if (node) {
-    state.dragNode = node;
-    state.dragOffX = (e.clientX - rect.left) - node.x;
-    state.dragOffY = (e.clientY - rect.top) - node.y;
-    canvas.style.cursor = 'grabbing';
-  }
-});
-canvas.addEventListener('mouseup', e => {
-  if (state.dragNode) {
-    const dx = Math.abs(state.dragNode.x - (state.dragNode._origX||state.dragNode.x));
-    const dy = Math.abs(state.dragNode.y - (state.dragNode._origY||state.dragNode.y));
-    state.dragNode._origX = state.dragNode.x;
-    state.dragNode._origY = state.dragNode.y;
-    state.dragNode = null;
-    canvas.style.cursor = 'default';
-    if (dx < 3 && dy < 3) {
-      // It's a click, not a drag
-      handleNodeClick(e);
+    function toggleCritical() {
+      state.showCritical = !state.showCritical;
+      if (state.showCritical && !state.critical && places.length > 0) {
+        state.critical = findCritical();
+        document.getElementById('info-crit-nodes').textContent = state.critical.nodes.join(', ') || '无';
+        document.getElementById('info-crit-edges').textContent = state.critical.edges.map(edge => edge.join('-')).join(', ') || '无';
+      }
+      if (!state.showCritical) {
+        document.getElementById('info-crit-nodes').textContent = '—';
+        document.getElementById('info-crit-edges').textContent = '—';
+      }
+      draw();
     }
-    return;
-  }
-});
-function handleNodeClick(e) {
-  const rect = canvas.getBoundingClientRect();
-  const node = nodeAt(e.clientX - rect.left, e.clientY - rect.top);
-  if (!node) return;
-  if (!state.fromId || (state.fromId && state.toId)) {
-    state.fromId = node.id; state.toId = null; state.pathResult = null;
-  } else {
-    state.toId = node.id;
-    document.getElementById('sel-from').value = state.fromId;
-    document.getElementById('sel-to').value = state.toId;
-    findPath(); return;
-  }
-  document.getElementById('sel-from').value = state.fromId;
-  document.getElementById('sel-to').value = '';
-  draw();
-}
 
-// ==================== 按钮操作 ====================
-function findPath() {
-  const fromId = document.getElementById('sel-from').value;
-  const toId = document.getElementById('sel-to').value;
-  const mode = document.getElementById('sel-mode').value;
-  if (!fromId || !toId || places.length===0) return;
-  state.fromId = fromId; state.toId = toId;
-  state.pathResult = dijkstra(fromId, toId, mode);
-  const box = document.getElementById('result-box');
-  if (!state.pathResult) {
-    box.textContent = 'NO_PATH — ' + fromId + ' 到 ' + toId + ' 不可达';
-  } else {
-    const costLabel = mode === 'DIST' ? 'm' : 'min';
-    let txt = `PATH ${mode} ${state.pathResult.cost} ${costLabel}\nNODES ${state.pathResult.path.join(' → ')}\n`;
-    for (let i=0; i+1<state.pathResult.path.length; i++) {
-      const a=state.pathResult.path[i], b=state.pathResult.path[i+1];
-      const r = roads.find(rr=>(rr.from===a&&rr.to===b)||(rr.from===b&&rr.to===a));
-      if (r) txt += `  ${a}→${b}: ${r.dist}m / ${r.time}min [${r.status}]\n`;
+    function toggleComponents() {
+      state.showComponents = !state.showComponents;
+      if (state.showComponents && !state.components && places.length > 0) {
+        state.components = findComponents();
+        document.getElementById('info-comp').textContent = state.components.length;
+      }
+      if (!state.showComponents) {
+        document.getElementById('info-comp').textContent = '—';
+      }
+      draw();
     }
-    box.textContent = txt;
-  }
-  draw();
-}
-function clearPath() {
-  state.pathResult = null; state.fromId = null; state.toId = null;
-  document.getElementById('sel-from').value = ''; document.getElementById('sel-to').value = '';
-  document.getElementById('result-box').textContent = '路径已清除。';
-  draw();
-}
-function toggleCritical() {
-  state.showCritical = !state.showCritical;
-  if (state.showCritical && !state.critical && places.length>0) {
-    state.critical = findCritical();
-    document.getElementById('info-crit-nodes').textContent = state.critical.nodes.join(', ') || '无';
-    document.getElementById('info-crit-edges').textContent = state.critical.edges.map(e=>e[0]+'-'+e[1]).join(', ') || '无';
-  }
-  if (!state.showCritical) {
-    document.getElementById('info-crit-nodes').textContent = '—';
-    document.getElementById('info-crit-edges').textContent = '—';
-  }
-  draw();
-}
-function toggleComponents() {
-  state.showComponents = !state.showComponents;
-  if (state.showComponents && !state.components && places.length>0) {
-    state.components = findComponents();
-    document.getElementById('info-comp').textContent = state.components.length;
-  }
-  if (!state.showComponents) {
-    document.getElementById('info-comp').textContent = '—';
-  }
-  draw();
-}
-function resetLayout() {
-  if (places.length>0) { runForceLayout(); draw(); }
-}
 
-// ==================== 文件加载 ====================
-let pendingPlaces = null, pendingRoads = null;
-function checkFiles() {
-  const fp = document.getElementById('file-places').files[0];
-  const fr = document.getElementById('file-roads').files[0];
-  document.getElementById('btn-load').disabled = !(fp && fr);
-}
-async function loadFiles() {
-  const fp = document.getElementById('file-places').files[0];
-  const fr = document.getElementById('file-roads').files[0];
-  if (!fp || !fr) return;
-  const pt = await fp.text();
-  const rt = await fr.text();
-  loadData(pt, rt);
-}
+    function resetLayout() {
+      if (!places.length) return;
+      fitToView();
+      draw();
+    }
 
-// ==================== 默认加载项目数据 ====================
-const DEFAULT_PLACES = `place_id,display_name,category,stay_time,open_time,close_time
+    // ==================== 文件加载 ====================
+    let pendingPlaces = null, pendingRoads = null;
+    function checkFiles() {
+      const fp = document.getElementById('file-places').files[0];
+      const fr = document.getElementById('file-roads').files[0];
+      document.getElementById('btn-load').disabled = !(fp && fr);
+    }
+    async function loadFiles() {
+      const fp = document.getElementById('file-places').files[0];
+      const fr = document.getElementById('file-roads').files[0];
+      if (!fp || !fr) return;
+      const pt = await fp.text();
+      const rt = await fr.text();
+      loadData(pt, rt);
+    }
+
+    // ==================== 默认加载项目数据 ====================
+    const DEFAULT_PLACES = `place_id,display_name,category,stay_time,open_time,close_time
 P0001,stadium,Sports_and_Entertainment,30,00:00,23:59
 P0002,Literature_and_History_Building,Teaching_Research_and_Administration,1,00:00,23:59
 P0003,Hedong_Canteen,Dining_room,30,00:00,23:59
@@ -696,7 +1111,7 @@ P0085,Gate_460_Zaoyang_Road,other,0,00:00,23:59
 P0086,Gate_788_Zaoyang_Road,other,0,00:00,23:59
 P0087,Chairman_Mao_portrait,other,10,00:00,23:59`;
 
-const DEFAULT_ROADS = `from_id,to_id,distance,walk_time,status
+    const DEFAULT_ROADS = `from_id,to_id,distance,walk_time,status
 P0084,P0025,152,2,open
 P0085,P0047,96,2,open
 P0085,P0045,312,4,open
@@ -724,11 +1139,12 @@ P0045,P0007,541,7,open
 P0018,P0007,437,6,open
 P0007,P0006,47,1,open`;
 
-function init() {
-  resize();
-  loadData(DEFAULT_PLACES, DEFAULT_ROADS);
-}
-init();
-</script>
+    function init() {
+      resize();
+      loadData(DEFAULT_PLACES, DEFAULT_ROADS);
+    }
+    init();
+  </script>
 </body>
+
 </html>
