@@ -1,0 +1,56 @@
+[
+{
+  "directory": "D:/michael_codes/校园导航/build",
+  "command": "C:\\PROGRA~1\\X86_64~1.0-R\\mingw64\\bin\\G__~1.EXE   -g -std=gnu++17 -o CMakeFiles\\CampusNavigation.dir\\main.cpp.obj -c D:\\michael_codes\\校园导航\\CampusNavigation\\main.cpp",
+  "file": "D:/michael_codes/校园导航/CampusNavigation/main.cpp",
+  "output": "CMakeFiles/CampusNavigation.dir/main.cpp.obj"
+},
+{
+  "directory": "D:/michael_codes/校园导航/build",
+  "command": "C:\\PROGRA~1\\X86_64~1.0-R\\mingw64\\bin\\G__~1.EXE   -g -std=gnu++17 -o CMakeFiles\\CampusNavigation.dir\\LGraph.cpp.obj -c D:\\michael_codes\\校园导航\\CampusNavigation\\LGraph.cpp",
+  "file": "D:/michael_codes/校园导航/CampusNavigation/LGraph.cpp",
+  "output": "CMakeFiles/CampusNavigation.dir/LGraph.cpp.obj"
+},
+{
+  "directory": "D:/michael_codes/校园导航/build",
+  "command": "C:\\PROGRA~1\\X86_64~1.0-R\\mingw64\\bin\\G__~1.EXE   -g -std=gnu++17 -o CMakeFiles\\CampusNavigation.dir\\LocationInfo.cpp.obj -c D:\\michael_codes\\校园导航\\CampusNavigation\\LocationInfo.cpp",
+  "file": "D:/michael_codes/校园导航/CampusNavigation/LocationInfo.cpp",
+  "output": "CMakeFiles/CampusNavigation.dir/LocationInfo.cpp.obj"
+},
+{
+  "directory": "D:/michael_codes/校园导航/build",
+  "command": "C:\\PROGRA~1\\X86_64~1.0-R\\mingw64\\bin\\G__~1.EXE   -g -std=gnu++17 -o CMakeFiles\\CampusNavigation.dir\\Algorithm.cpp.obj -c D:\\michael_codes\\校园导航\\CampusNavigation\\Algorithm.cpp",
+  "file": "D:/michael_codes/校园导航/CampusNavigation/Algorithm.cpp",
+  "output": "CMakeFiles/CampusNavigation.dir/Algorithm.cpp.obj"
+},
+{
+  "directory": "D:/michael_codes/校园导航/build",
+  "command": "C:\\PROGRA~1\\X86_64~1.0-R\\mingw64\\bin\\G__~1.EXE   -g -std=gnu++17 -o CMakeFiles\\CampusNavigation.dir\\CsvIO.cpp.obj -c D:\\michael_codes\\校园导航\\CampusNavigation\\CsvIO.cpp",
+  "file": "D:/michael_codes/校园导航/CampusNavigation/CsvIO.cpp",
+  "output": "CMakeFiles/CampusNavigation.dir/CsvIO.cpp.obj"
+},
+{
+  "directory": "D:/michael_codes/校园导航/build",
+  "command": "C:\\PROGRA~1\\X86_64~1.0-R\\mingw64\\bin\\G__~1.EXE   -g -std=gnu++17 -o CMakeFiles\\CampusNavigation.dir\\CommandProcessor.cpp.obj -c D:\\michael_codes\\校园导航\\CampusNavigation\\CommandProcessor.cpp",
+  "file": "D:/michael_codes/校园导航/CampusNavigation/CommandProcessor.cpp",
+  "output": "CMakeFiles/CampusNavigation.dir/CommandProcessor.cpp.obj"
+},
+{
+  "directory": "D:/michael_codes/校园导航/build",
+  "command": "C:\\PROGRA~1\\X86_64~1.0-R\\mingw64\\bin\\G__~1.EXE   -g -std=gnu++17 -o CMakeFiles\\test_lgraph.dir\\test_lgraph.cpp.obj -c D:\\michael_codes\\校园导航\\CampusNavigation\\test_lgraph.cpp",
+  "file": "D:/michael_codes/校园导航/CampusNavigation/test_lgraph.cpp",
+  "output": "CMakeFiles/test_lgraph.dir/test_lgraph.cpp.obj"
+},
+{
+  "directory": "D:/michael_codes/校园导航/build",
+  "command": "C:\\PROGRA~1\\X86_64~1.0-R\\mingw64\\bin\\G__~1.EXE   -g -std=gnu++17 -o CMakeFiles\\test_lgraph.dir\\LGraph.cpp.obj -c D:\\michael_codes\\校园导航\\CampusNavigation\\LGraph.cpp",
+  "file": "D:/michael_codes/校园导航/CampusNavigation/LGraph.cpp",
+  "output": "CMakeFiles/test_lgraph.dir/LGraph.cpp.obj"
+},
+{
+  "directory": "D:/michael_codes/校园导航/build",
+  "command": "C:\\PROGRA~1\\X86_64~1.0-R\\mingw64\\bin\\G__~1.EXE   -g -std=gnu++17 -o CMakeFiles\\test_lgraph.dir\\LocationInfo.cpp.obj -c D:\\michael_codes\\校园导航\\CampusNavigation\\LocationInfo.cpp",
+  "file": "D:/michael_codes/校园导航/CampusNavigation/LocationInfo.cpp",
+  "output": "CMakeFiles/test_lgraph.dir/LocationInfo.cpp.obj"
+}
+]
