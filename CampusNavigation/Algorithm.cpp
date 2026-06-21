@@ -99,14 +99,15 @@ namespace Graph
             return computeComponents(graph, "", empty_set);
         }
 
-        // ==================== B. 最短路径 ====================
+        // ==================== B. 最短路径(Dijkstra) ====================
 
         PathResult GetShortestPath(const LGraph &graph,
                                    const std::string &from_id,
                                    const std::string &to_id,
                                    PathMode mode)
         {
-            if (from_id == to_id) {
+            if (from_id == to_id)
+            {
                 return PathResult{0, {from_id}, true};
             }
 
@@ -121,17 +122,22 @@ namespace Graph
             dist[from_id] = 0;
             pq.push({0, from_id});
 
-            while (!pq.empty()) {
+            while (!pq.empty())
+            {
                 auto [d, u] = pq.top();
                 pq.pop();
 
-                if (d != dist[u]) continue;  // 陈旧条目，跳过
+                if (d != dist[u])
+                    continue; // 陈旧条目，跳过
 
-                if (u == to_id) break;  // 已找到最短路径
+                if (u == to_id)
+                    break; // 已找到最短路径
 
                 auto edges = graph.GetAdjacentEdges(u);
-                for (const auto &e : edges) {
-                    if (e.status != "open") continue;
+                for (const auto &e : edges)
+                {
+                    if (e.status != "open")
+                        continue;
 
                     int w = (mode == DIST) ? e.distance : e.walk_time;
                     int nd = d + w;
@@ -139,7 +145,8 @@ namespace Graph
 
                     auto it = dist.find(v);
                     if (it == dist.end() || nd < it->second ||
-                        (nd == it->second && u < prev[v])) {
+                        (nd == it->second && u < prev[v]))
+                    {
                         dist[v] = nd;
                         prev[v] = u;
                         pq.push({nd, v});
@@ -148,14 +155,16 @@ namespace Graph
             }
 
             // 判断是否可达
-            if (dist.find(to_id) == dist.end()) {
+            if (dist.find(to_id) == dist.end())
+            {
                 return PathResult();
             }
 
             // 回溯路径
             std::vector<std::string> path;
             std::string curr = to_id;
-            while (curr != from_id) {
+            while (curr != from_id)
+            {
                 path.push_back(curr);
                 curr = prev[curr];
             }
@@ -168,10 +177,12 @@ namespace Graph
         // ==================== B_plus. 分层图最短路径（拓展1） ====================
 
         PathResultK GetShortestPathK(const LGraph &graph,
-                                      const std::string &from_id,
-                                      const std::string &to_id,
-                                      int K) {
-            if (from_id == to_id) {
+                                     const std::string &from_id,
+                                     const std::string &to_id,
+                                     int K)
+        {
+            if (from_id == to_id)
+            {
                 PathResultK res;
                 res.total_time = 0;
                 res.k_used = 0;
@@ -201,31 +212,38 @@ namespace Graph
             int best_time = INF;
             int best_k = -1;
 
-            while (!pq.empty()) {
+            while (!pq.empty())
+            {
                 auto [time, u, k] = pq.top();
                 pq.pop();
 
                 // 陈旧条目
                 auto it_u = dist.find(u);
-                if (it_u == dist.end()) continue;
+                if (it_u == dist.end())
+                    continue;
                 auto it_uk = it_u->second.find(k);
-                if (it_uk == it_u->second.end() || time != it_uk->second) continue;
+                if (it_uk == it_u->second.end() || time != it_uk->second)
+                    continue;
 
-                if (u == to_id) {
+                if (u == to_id)
+                {
                     best_time = time;
                     best_k = k;
-                    break;  // 第一次弹出终点即为最优
+                    break; // 第一次弹出终点即为最优
                 }
 
                 auto edges = graph.GetAdjacentEdges(u);
-                for (const auto &e : edges) {
-                    if (e.status != "open") continue;
+                for (const auto &e : edges)
+                {
+                    if (e.status != "open")
+                        continue;
                     const std::string &v = e.to_id;
                     int w = e.walk_time;
 
                     // 分支1：不用券
                     int nd = time + w;
-                    if (!dist[v].count(k) || nd < dist[v][k]) {
+                    if (!dist[v].count(k) || nd < dist[v][k])
+                    {
                         dist[v][k] = nd;
                         prev_node[v][k] = u;
                         prev_k_map[v][k] = k;
@@ -234,10 +252,12 @@ namespace Graph
                     }
 
                     // 分支2：用券（k+1 ≤ K）
-                    if (k + 1 <= K) {
-                        int reduced = (w + 2) / 3;  // ceil(w / 3)
+                    if (k + 1 <= K)
+                    {
+                        int reduced = (w + 2) / 3; // ceil(w / 3)
                         int nd2 = time + reduced;
-                        if (!dist[v].count(k + 1) || nd2 < dist[v][k + 1]) {
+                        if (!dist[v].count(k + 1) || nd2 < dist[v][k + 1])
+                        {
                             dist[v][k + 1] = nd2;
                             prev_node[v][k + 1] = u;
                             prev_k_map[v][k + 1] = k;
@@ -248,7 +268,8 @@ namespace Graph
                 }
             }
 
-            if (best_time == INF) {
+            if (best_time == INF)
+            {
                 return PathResultK();
             }
 
@@ -258,11 +279,13 @@ namespace Graph
 
             std::string curr = to_id;
             int ck = best_k;
-            while (!(curr == from_id && ck == 0)) {
+            while (!(curr == from_id && ck == 0))
+            {
                 path.push_back(curr);
                 std::string pv = prev_node[curr][ck];
                 int pk = prev_k_map[curr][ck];
-                if (coupon[curr][ck]) {
+                if (coupon[curr][ck])
+                {
                     fast.push_back({std::min(pv, curr), std::max(pv, curr)});
                 }
                 curr = pv;
@@ -291,15 +314,18 @@ namespace Graph
         {
             // 检查起止点是否在 time 时刻开放
             auto info_from = graph.GetVertex(from_id);
-            if (time < info_from.open_time || time > info_from.close_time) {
+            if (time < info_from.open_time || time > info_from.close_time)
+            {
                 return PathResult();
             }
             auto info_to = graph.GetVertex(to_id);
-            if (time < info_to.open_time || time > info_to.close_time) {
+            if (time < info_to.open_time || time > info_to.close_time)
+            {
                 return PathResult();
             }
 
-            if (from_id == to_id) {
+            if (from_id == to_id)
+            {
                 return PathResult{0, {from_id}, true};
             }
 
@@ -312,29 +338,36 @@ namespace Graph
             dist[from_id] = 0;
             pq.push({0, from_id});
 
-            while (!pq.empty()) {
+            while (!pq.empty())
+            {
                 auto [d, u] = pq.top();
                 pq.pop();
 
-                if (d != dist[u]) continue;
-                if (u == to_id) break;
+                if (d != dist[u])
+                    continue;
+                if (u == to_id)
+                    break;
 
                 auto edges = graph.GetAdjacentEdges(u);
-                for (const auto &e : edges) {
-                    if (e.status != "open") continue;
+                for (const auto &e : edges)
+                {
+                    if (e.status != "open")
+                        continue;
 
                     const std::string &v = e.to_id;
 
                     // 检查邻居 v 在 time 时刻是否开放
                     auto info_v = graph.GetVertex(v);
-                    if (time < info_v.open_time || time > info_v.close_time) continue;
+                    if (time < info_v.open_time || time > info_v.close_time)
+                        continue;
 
                     int w = (mode == DIST) ? e.distance : e.walk_time;
                     int nd = d + w;
 
                     auto it = dist.find(v);
                     if (it == dist.end() || nd < it->second ||
-                        (nd == it->second && u < prev[v])) {
+                        (nd == it->second && u < prev[v]))
+                    {
                         dist[v] = nd;
                         prev[v] = u;
                         pq.push({nd, v});
@@ -342,13 +375,15 @@ namespace Graph
                 }
             }
 
-            if (dist.find(to_id) == dist.end()) {
+            if (dist.find(to_id) == dist.end())
+            {
                 return PathResult();
             }
 
             std::vector<std::string> path;
             std::string curr = to_id;
-            while (curr != from_id) {
+            while (curr != from_id)
+            {
                 path.push_back(curr);
                 curr = prev[curr];
             }
@@ -369,7 +404,8 @@ namespace Graph
             // 构建完整的点序列：from → w1 → w2 → ... → wk → to
             std::vector<std::string> stops;
             stops.push_back(from_id);
-            for (const auto &wp : waypoints) {
+            for (const auto &wp : waypoints)
+            {
                 stops.push_back(wp);
             }
             stops.push_back(to_id);
@@ -377,20 +413,26 @@ namespace Graph
             int total_cost = 0;
             std::vector<std::string> full_path;
 
-            for (size_t i = 0; i + 1 < stops.size(); ++i) {
+            for (size_t i = 0; i + 1 < stops.size(); ++i)
+            {
                 auto seg = GetShortestPath(graph, stops[i], stops[i + 1], mode);
-                if (!seg.reachable) {
-                    return PathResult();  // 任一段不可达，整体不可达
+                if (!seg.reachable)
+                {
+                    return PathResult(); // 任一段不可达，整体不可达
                 }
 
                 total_cost += seg.total_cost;
 
                 // 拼接路径：去掉段间重复的起点（即上一段的终点）
-                if (full_path.empty()) {
+                if (full_path.empty())
+                {
                     full_path = seg.path;
-                } else {
+                }
+                else
+                {
                     // seg.path[0] == full_path.back()（junction 点），跳过
-                    for (size_t j = 1; j < seg.path.size(); ++j) {
+                    for (size_t j = 1; j < seg.path.size(); ++j)
+                    {
                         full_path.push_back(seg.path[j]);
                     }
                 }
@@ -404,18 +446,23 @@ namespace Graph
         std::vector<EdgeNode> MinimumSpanningTree(const LGraph &graph)
         {
             auto ids = graph.AllPlaceIds();
-            if (ids.empty()) return {};
+            if (ids.empty())
+                return {};
             std::sort(ids.begin(), ids.end());
 
             // 从排序后的节点列表确定性收集边（避免 unordered_map 遍历顺序不确定）
             std::vector<EdgeNode> edges;
             std::unordered_set<std::string> seen_edges;
-            for (const auto &id : ids) {
+            for (const auto &id : ids)
+            {
                 auto adj = graph.GetAdjacentEdges(id);
-                for (const auto &e : adj) {
-                    if (e.status != "open") continue;
+                for (const auto &e : adj)
+                {
+                    if (e.status != "open")
+                        continue;
                     std::string ek = id < e.to_id ? (id + '|' + e.to_id) : (e.to_id + '|' + id);
-                    if (seen_edges.count(ek)) continue;
+                    if (seen_edges.count(ek))
+                        continue;
                     seen_edges.insert(ek);
                     edges.push_back(e);
                 }
@@ -423,8 +470,10 @@ namespace Graph
 
             // Kruskal: 按 distance 升序，等权按 (from,to) 字典序
             std::sort(edges.begin(), edges.end(),
-                      [](const EdgeNode &a, const EdgeNode &b) {
-                          if (a.distance != b.distance) return a.distance < b.distance;
+                      [](const EdgeNode &a, const EdgeNode &b)
+                      {
+                          if (a.distance != b.distance)
+                              return a.distance < b.distance;
                           std::string ak = std::min(a.from_id, a.to_id) + '|' + std::max(a.from_id, a.to_id);
                           std::string bk = std::min(b.from_id, b.to_id) + '|' + std::max(b.from_id, b.to_id);
                           return ak < bk;
@@ -432,35 +481,41 @@ namespace Graph
 
             // Build id→index map
             std::unordered_map<std::string, int> idx;
-            for (int i = 0; i < static_cast<int>(ids.size()); ++i) {
+            for (int i = 0; i < static_cast<int>(ids.size()); ++i)
+            {
                 idx[ids[i]] = i;
             }
 
             DSU dsu(static_cast<int>(ids.size()));
             std::vector<EdgeNode> mst;
 
-            for (const auto &e : edges) {
+            for (const auto &e : edges)
+            {
                 int u = idx[e.from_id];
                 int v = idx[e.to_id];
-                if (!dsu.same(u, v)) {
+                if (!dsu.same(u, v))
+                {
                     dsu.unite(u, v);
                     mst.push_back(e);
                 }
             }
 
             // 不连通
-            if (static_cast<int>(mst.size()) != static_cast<int>(ids.size()) - 1) {
+            if (static_cast<int>(mst.size()) != static_cast<int>(ids.size()) - 1)
+            {
                 return {};
             }
 
             // 按 (min(u,v), max(u,v)) 字典序排序输出
             std::sort(mst.begin(), mst.end(),
-                      [](const EdgeNode &a, const EdgeNode &b) {
+                      [](const EdgeNode &a, const EdgeNode &b)
+                      {
                           std::string a_min = std::min(a.from_id, a.to_id);
                           std::string a_max = std::max(a.from_id, a.to_id);
                           std::string b_min = std::min(b.from_id, b.to_id);
                           std::string b_max = std::max(b.from_id, b.to_id);
-                          if (a_min != b_min) return a_min < b_min;
+                          if (a_min != b_min)
+                              return a_min < b_min;
                           return a_max < b_max;
                       });
 
@@ -481,9 +536,11 @@ namespace Graph
 
             // 关键节点：依次屏蔽每个顶点
             auto all_ids = graph.AllPlaceIds();
-            for (const auto &id : all_ids) {
+            for (const auto &id : all_ids)
+            {
                 auto comp = computeComponents(graph, id, empty_set);
-                if (comp.count > baseline) {
+                if (comp.count > baseline)
+                {
                     result.critical_nodes.push_back(id);
                 }
             }
@@ -492,13 +549,15 @@ namespace Graph
 
             // 关键边：依次屏蔽每条 open 边
             auto open_edges = graph.AllEdges(true);
-            for (const auto &e : open_edges) {
+            for (const auto &e : open_edges)
+            {
                 std::string ek = (e.from_id < e.to_id)
-                    ? (e.from_id + "|" + e.to_id)
-                    : (e.to_id + "|" + e.from_id);
+                                     ? (e.from_id + "|" + e.to_id)
+                                     : (e.to_id + "|" + e.from_id);
                 std::unordered_set<std::string> blocked_edges = {ek};
                 auto comp = computeComponents(graph, "", blocked_edges);
-                if (comp.count > baseline) {
+                if (comp.count > baseline)
+                {
                     std::string u = std::min(e.from_id, e.to_id);
                     std::string v = std::max(e.from_id, e.to_id);
                     result.critical_edges.push_back({u, v});
@@ -506,8 +565,10 @@ namespace Graph
             }
             // 按 (min(u,v), max(u,v)) 字典序排列
             std::sort(result.critical_edges.begin(), result.critical_edges.end(),
-                      [](const auto &a, const auto &b) {
-                          if (a.first != b.first) return a.first < b.first;
+                      [](const auto &a, const auto &b)
+                      {
+                          if (a.first != b.first)
+                              return a.first < b.first;
                           return a.second < b.second;
                       });
 
@@ -516,16 +577,19 @@ namespace Graph
 
         // ==================== E_plus. Tarjan 算法 O(V+E) 求割点与桥 ====================
 
-        CriticalResult FindCriticalTarjan(const LGraph &graph) {
+        CriticalResult FindCriticalTarjan(const LGraph &graph)
+        {
             auto ids = graph.AllPlaceIds();
             std::sort(ids.begin(), ids.end());
             int n = static_cast<int>(ids.size());
-            if (n == 0) return {{}, {}};
+            if (n == 0)
+                return {{}, {}};
 
             // 建立 place_id → 整数索引 的双向映射
             std::unordered_map<std::string, int> idx;
             std::vector<std::string> id_to_str(n);
-            for (int i = 0; i < n; ++i) {
+            for (int i = 0; i < n; ++i)
+            {
                 idx[ids[i]] = i;
                 id_to_str[i] = ids[i];
             }
@@ -536,25 +600,30 @@ namespace Graph
             int timer = 0;
 
             // 非递归 DFS 状态
-            struct Frame {
+            struct Frame
+            {
                 int u, parent, next_child_idx;
                 bool entered;
             };
 
             std::vector<Frame> stack;
-            std::vector<std::vector<int>> children(n);  // 每个根在 DFS 树中的孩子
+            std::vector<std::vector<int>> children(n); // 每个根在 DFS 树中的孩子
 
-            for (int start = 0; start < n; ++start) {
-                if (dfn[start] != 0) continue;
+            for (int start = 0; start < n; ++start)
+            {
+                if (dfn[start] != 0)
+                    continue;
 
                 // 启动新 DFS 树
                 stack.push_back({start, -1, 0, false});
 
-                while (!stack.empty()) {
+                while (!stack.empty())
+                {
                     auto &f = stack.back();
                     int u = f.u, parent = f.parent;
 
-                    if (!f.entered) {
+                    if (!f.entered)
+                    {
                         f.entered = true;
                         dfn[u] = low[u] = ++timer;
                     }
@@ -563,42 +632,54 @@ namespace Graph
                     auto edges = graph.GetAdjacentEdges(id_to_str[u]);
                     bool found_child = false;
 
-                    while (f.next_child_idx < static_cast<int>(edges.size())) {
+                    while (f.next_child_idx < static_cast<int>(edges.size()))
+                    {
                         const auto &e = edges[f.next_child_idx++];
-                        if (e.status != "open") continue;
+                        if (e.status != "open")
+                            continue;
                         int v = idx[e.to_id];
 
-                        if (v == parent) continue;  // 跳过父节点
+                        if (v == parent)
+                            continue; // 跳过父节点
 
-                        if (dfn[v] == 0) {
+                        if (dfn[v] == 0)
+                        {
                             // 树边：递归进入 v
-                            if (parent == -1) children[start].push_back(v);
+                            if (parent == -1)
+                                children[start].push_back(v);
                             stack.push_back({v, u, 0, false});
                             found_child = true;
                             break;
-                        } else {
+                        }
+                        else
+                        {
                             // 回边：更新 low[u]
                             low[u] = std::min(low[u], dfn[v]);
                         }
                     }
 
-                    if (!found_child) {
+                    if (!found_child)
+                    {
                         // u 的所有邻边处理完毕，回溯
                         stack.pop_back();
 
-                        if (parent != -1) {
+                        if (parent != -1)
+                        {
                             // 向上传递 low 值
                             low[parent] = std::min(low[parent], low[u]);
 
                             // 割点判定：存在子节点 v 使得 low[v] >= dfn[parent]
-                            if (low[u] >= dfn[parent]) {
+                            if (low[u] >= dfn[parent])
+                            {
                                 is_cut[parent] = true;
                             }
 
                             // 桥判定：low[v] > dfn[parent]
-                            if (low[u] > dfn[parent]) {
+                            if (low[u] > dfn[parent])
+                            {
                                 int a = parent, b = u;
-                                if (a > b) std::swap(a, b);
+                                if (a > b)
+                                    std::swap(a, b);
                                 bridges.push_back({a, b});
                             }
                         }
@@ -606,24 +687,30 @@ namespace Graph
                 }
 
                 // 根节点割点判定：DFS 树的根有 > 1 个孩子则为割点
-                if (children[start].size() <= 1) {
+                if (children[start].size() <= 1)
+                {
                     is_cut[start] = false;
                 }
             }
 
             // 收集结果并转换为 string
             CriticalResult result;
-            for (int i = 0; i < n; ++i) {
-                if (is_cut[i]) result.critical_nodes.push_back(id_to_str[i]);
+            for (int i = 0; i < n; ++i)
+            {
+                if (is_cut[i])
+                    result.critical_nodes.push_back(id_to_str[i]);
             }
             std::sort(result.critical_nodes.begin(), result.critical_nodes.end());
 
-            for (const auto &[a, b] : bridges) {
+            for (const auto &[a, b] : bridges)
+            {
                 result.critical_edges.push_back({id_to_str[a], id_to_str[b]});
             }
             std::sort(result.critical_edges.begin(), result.critical_edges.end(),
-                      [](const auto &x, const auto &y) {
-                          if (x.first != y.first) return x.first < y.first;
+                      [](const auto &x, const auto &y)
+                      {
+                          if (x.first != y.first)
+                              return x.first < y.first;
                           return x.second < y.second;
                       });
 
